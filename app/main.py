@@ -1,11 +1,12 @@
-from fastapi import FastAPI, Depends, Request, Form, UploadFile, File
+from fastapi import FastAPI, Depends, Request, Form, UploadFile, File, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.database import engine, Base, get_db
+from app.database import engine, Base, get_db, SessionLocal
 from app.models import Disaster, EmergencyRequest, SupplyInventory, PersonnelStatus, MissingPerson, FamilyUpdate
+from app.ai_service import analyze_emergency_priority
 from datetime import datetime, UTC
 import os
 import shutil
@@ -26,6 +27,21 @@ async def startup():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+# --- BACKGROUND AI TRIAGE TASK ---
+async def run_ai_triage(request_id: int):
+    async with SessionLocal() as db:
+        req = await db.get(EmergencyRequest, request_id)
+        if req:
+            # Perform AI urgency and priority analysis
+            triage = await analyze_emergency_priority(
+                description=req.description,
+                people_affected=req.people_affected,
+                request_type=req.request_type
+            )
+            req.priority = triage["priority"]
+            req.description = f"AI Dispatch: {triage['reasoning']}\n\n{req.description}"
+            await db.commit()
+
 # --- ROUTES ---
 
 @app.get("/", response_class=HTMLResponse)
@@ -38,7 +54,7 @@ async def get_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     requests_query = await db.execute(
         select(EmergencyRequest)
         .where(EmergencyRequest.status != "Completed")
-        .order_by(EmergencyRequest.created_at.desc())
+        .order_by(EmergencyRequest.priority == "Critical", EmergencyRequest.created_at.desc())
     )
     priority_queue = requests_query.scalars().all()
     
@@ -109,6 +125,7 @@ async def get_sos_page(request: Request, db: AsyncSession = Depends(get_db)):
 @app.post("/sos/submit", response_class=RedirectResponse)
 async def submit_sos_request(
     request: Request,
+    background_tasks: BackgroundTasks,
     full_name: str = Form(...),
     phone_number: str = Form(...),
     location: str = Form(...),
@@ -133,11 +150,11 @@ async def submit_sos_request(
     if not description:
         description = f"Emergency request for {request_type.lower()} support."
 
-    # Create new emergency request
+    # Create new emergency request with a temporary "Pending Triage" state
     new_request = EmergencyRequest(
         title=f"{request_type}: {description[:30]}...",
         description=description,
-        priority="High", # default priority level
+        priority="Medium", # default initial priority before AI updates it
         location=location,
         latitude=latitude,
         longitude=longitude,
@@ -161,6 +178,9 @@ async def submit_sos_request(
         updated_cookie = str(new_request.id)
         
     await db.commit()
+    
+    # Queue the AI triage background task
+    background_tasks.add_task(run_ai_triage, new_request.id)
     
     response = RedirectResponse(url="/sos", status_code=303)
     response.set_cookie(key="my_requests", value=updated_cookie, max_age=3600*24*30) # 30 days
