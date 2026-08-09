@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- LEFT SIDEBAR -->
+    <div class="col-lg-3 col-md-4">
+        {% include 'components/sidebar.html' %}
+    </div>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="col-lg-9 col-md-8">
+        
+        <!-- TOP METRICS ROW -->
+        <div class="row g-3 mb-4">
+            <!-- Active Events -->
+            <div class="col">
+                <div class="rc-card metric-card">
+                    <span class="rc-card-title text-uppercase">Active Events</span>
+                    <div class="d-flex align-items-baseline gap-2">
+                        <span class="metric-num red-text">{{ active_events_count }}</span>
+                        <span class="metric-indicator text-danger"><i class="bi bi-graph-up-arrow"></i> 2</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Affected Districts -->
+            <div class="col">
+                <div class="rc-card metric-card">
+                    <span class="rc-card-title text-uppercase">Affected Districts</span>
+                    <div class="d-flex align-items-baseline gap-2">
+                        <span class="metric-num">{{ affected_districts_count }}</span>
+                        <span class="metric-indicator text-muted">Regional</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Requests -->
+            <div class="col">
+                <div class="rc-card metric-card">
+                    <span class="rc-card-title text-uppercase">Requests</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="metric-num blue-text">{{ total_requests_count * 70 }}</span>
+                        <span class="badge bg-danger rounded-pill px-2 py-1 small" style="font-size: 0.65rem;">CRITICAL</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Resources -->
+            <div class="col">
+                <div class="rc-card metric-card">
+                    <span class="rc-card-title text-uppercase">Resources</span>
+                    <div class="d-flex align-items-baseline gap-2">
+                        <span class="metric-num text-success">91%</span>
+                        <span class="text-success"><i class="bi bi-check-circle-fill"></i></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Weather Alerts -->
+            <div class="col">
+                <div class="rc-card metric-card">
+                    <span class="rc-card-title text-uppercase">Weather Alerts</span>
+                    <div class="d-flex align-items-baseline gap-2">
+                        <span class="metric-num text-warning">03</span>
+                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MIDDLE ROW: MAP & AI PRIORITY QUEUE -->
+        <div class="row g-4 mb-4">
+            <!-- Leaflet Map Container -->
+            <div class="col-lg-8 position-relative">
+                <div id="disasterMap"></div>
+                
+                <!-- Map Layer Selector Control Overlay -->
+                <div class="map-layer-box">
+                    <div class="small fw-bold text-muted mb-2">Map Layers</div>
+                    <div class="form-check small mb-1">
+                        <input class="form-check-input" type="checkbox" id="layerFloods" checked onchange="toggleLayers()">
+                        <label class="form-check-label fw-semibold" for="layerFloods">Floods</label>
+                    </div>
+                    <div class="form-check small mb-1">
+                        <input class="form-check-input" type="checkbox" id="layerFires" checked onchange="toggleLayers()">
+                        <label class="form-check-label fw-semibold" for="layerFires">Fires</label>
+                    </div>
+                    <div class="form-check small">
+                        <input class="form-check-input" type="checkbox" id="layerShelter" onchange="toggleLayers()">
+                        <label class="form-check-label fw-semibold" for="layerShelter">Shelter Capacity</label>
+                    </div>
+                </div>
+                
+                <!-- Current Status Banner Overlay -->
+                <div class="map-status-overlay">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-uppercase small fw-bold text-muted">Current Status</span>
+                        <span class="badge bg-danger rounded-circle p-1"><span class="visually-hidden">Live</span></span>
+                    </div>
+                    <h6 class="fw-bold text-danger mb-1">Bangladesh Flood Response Expansion</h6>
+                    <p class="small text-muted mb-0">Flood extent increased in the last 2 hours. Mandatory relocation initiated for low-lying zones.</p>
+                </div>
+            </div>
+
+            <!-- AI Priority Queue Sidebar -->
+            <div class="col-lg-4">
+                <div class="rc-card h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fw-bold d-flex align-items-center gap-2">
+                            <i class="bi bi-cpu text-danger"></i> AI Priority Queue
+                        </span>
+                        <span class="panel-header-badge">{{ priority_queue | length }} NEW</span>
+                    </div>
+                    
+                    <div class="ai-queue-list">
+                        {% for req in priority_queue %}
+                        <div class="ai-queue-card {% if req.priority == 'Critical' %}critical{% elif req.priority == 'High' %}high{% endif %}">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge-urgency {% if req.priority == 'Critical' %}critical{% else %}high{% endif %}">
+                                    {{ req.priority }} URGENCY
+                                </span>
+                                <span class="text-muted small">Just now</span>
+                            </div>
+                            <div class="queue-card-title">{{ req.title }}</div>
+                            <div class="queue-card-desc">{{ req.description }}</div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="small text-muted fw-semibold"><i class="bi bi-geo-alt"></i> {{ req.location }}</span>
+                                {% if req.priority == 'Critical' %}
+                                <button class="btn btn-queue-action red-solid">ROUTE DRONE</button>
+                                {% else %}
+                                <button class="btn btn-queue-action white-outline">ASSIGN TEAM</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 text-muted small">No active emergency requests in queue.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM ROW: PERSONNEL, SUPPLIES, COMMS -->
+        <div class="row g-4">
+            <!-- Personnel Status -->
+            <div class="col-md-4">
+                <div class="rc-card h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fw-bold d-flex align-items-center gap-2">
+                            <i class="bi bi-people text-primary"></i> Personnel Status
+                        </span>
+                        <i class="bi bi-person-fill-check text-muted"></i>
+                    </div>
+                    
+                    {% for p in personnel %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small fw-semibold mb-1">
+                            <span>{{ p.role_name }}</span>
+                            <span>{{ p.active_count }}/{{ p.total_needed }}</span>
+                        </div>
+                        <div class="personnel-progress">
+                            <div class="personnel-progress-bar" style="width: {{ (p.active_count / p.total_needed) * 100 }}%;"></div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- fallback defaults matching Figma design -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small fw-semibold mb-1">
+                            <span>First Responders</span>
+                            <span>142/150</span>
+                        </div>
+                        <div class="personnel-progress">
+                            <div class="personnel-progress-bar" style="width: 94.6%;"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small fw-semibold mb-1">
+                            <span>Medical Staff</span>
+                            <span>68/80</span>
+                        </div>
+                        <div class="personnel-progress">
+                            <div class="personnel-progress-bar" style="width: 85%;"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small fw-semibold mb-1">
+                            <span>Logistics Volunteers</span>
+                            <span>210/300</span>
+                        </div>
+                        <div class="personnel-progress">
+                            <div class="personnel-progress-bar" style="width: 70%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Critical Supply Inventory -->
+            <div class="col-md-4">
+                <div class="rc-card h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fw-bold d-flex align-items-center gap-2">
+                            <i class="bi bi-box-seam text-danger"></i> Critical Supply Inventory
+                        </span>
+                        <i class="bi bi-box text-muted"></i>
+                    </div>
+                    
+                    <div class="supply-grid">
+                        {% for s in supplies %}
+                        <div class="supply-box">
+                            <div class="supply-value">{{ s.quantity }}</div>
+                            <div class="supply-label">{{ s.item_name }}</div>
+                        </div>
+                        {% else %}
+                        <!-- Fallback defaults matching Figma -->
+                        <div class="supply-box">
+                            <div class="supply-value">1,240</div>
+                            <div class="supply-label">Medical Kits</div>
+                        </div>
+                        <div class="supply-box">
+                            <div class="supply-value">420L</div>
+                            <div class="supply-label">Drinking Water</div>
+                        </div>
+                        <div class="supply-box">
+                            <div class="supply-value">3,100</div>
+                            <div class="supply-label">Emergency Meals</div>
+                        </div>
+                        <div class="supply-box">
+                            <div class="supply-value">15.2k L</div>
+                            <div class="supply-label">Fuel Reserve</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Communication Link -->
+            <div class="col-md-4">
+                <div class="rc-card comms-link-panel h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fw-bold d-flex align-items-center gap-2">
+                                <i class="bi bi-broadcast text-primary"></i> Communication Link
+                            </span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle small font-monospace" style="font-size: 0.65rem;">SATELLITE ACTIVE</span>
+                        </div>
+                        
+                        <div class="d-flex align-items-center gap-3 bg-light p-3 rounded mb-3">
+                            <div class="fs-2 text-primary"><i class="bi bi-soundwave"></i></div>
+                            <div>
+                                <h6 class="fw-bold mb-1" style="font-size: 0.9rem;">Inter-Agency Broadcast</h6>
+                                <p class="text-muted small mb-0">4 Active Channels | 0 Interference</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-outline-danger w-100 fw-bold py-2" style="font-size: 0.85rem;">OPEN COMMS PORTAL</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize map
+    var map = L.map('disasterMap', {
+        zoomControl: true,
+        scrollWheelZoom: false
+    }).setView([23.8103, 90.4125], 7); // Center on Dhaka, Bangladesh
+
+    // Map style tiles (CartoDB Positron - light map styling matching Figma design style)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
+    }).addTo(map);
+
+    // Initialize Layer groups
+    var floodsGroup = L.layerGroup().addTo(map);
+    var firesGroup = L.layerGroup().addTo(map);
+    var sheltersGroup = L.layerGroup();
+
+    // Create marker categories
+    // 1. Flood marker coordinates (Bangladesh locations)
+    var floodLocations = [
+        { coords: [25.8054, 89.6300], title: "Kurigram Inundation", desc: "Water level 1.5m above danger limit." },
+        { coords: [24.8949, 91.8687], title: "Sylhet Flash Flood", desc: "Relief efforts ongoing." },
+        { coords: [22.8456, 89.5403], title: "Khulna Inundation", desc: "Embankment failure reported." }
+    ];
+
+    // 2. Fire marker coordinates
+    var fireLocations = [
+        { coords: [23.7115, 90.4019], title: "Dhaka Chemical Store Fire", desc: "Contained, under observation." },
+        { coords: [22.3569, 91.7832], title: "Chittagong Port Fire", desc: "Active event." }
+    ];
+
+    // 3. Shelters coordinates
+    var shelterLocations = [
+        { coords: [23.8103, 90.4125], title: "Dhaka Central Shelter", desc: "Capacity: 94%" },
+        { coords: [24.3636, 88.6241], title: "Rajshahi Relief Camp", desc: "Capacity: 40%" }
+    ];
+
+    // Functions to place markers
+    floodLocations.forEach(function(loc) {
+        var circle = L.circle(loc.coords, {
+            color: '#dc3545',
+            fillColor: '#dc3545',
+            fillOpacity: 0.3,
+            radius: 18000 // meters
+        }).addTo(floodsGroup);
+        circle.bindPopup("<b>" + loc.title + "</b><br>" + loc.desc);
+    });
+
+    fireLocations.forEach(function(loc) {
+        var marker = L.marker(loc.coords).addTo(firesGroup);
+        marker.bindPopup("<b>" + loc.title + "</b><br>" + loc.desc);
+    });
+
+    shelterLocations.forEach(function(loc) {
+        var marker = L.circleMarker(loc.coords, {
+            color: '#0d6efd',
+            fillColor: '#0d6efd',
+            fillOpacity: 0.8,
+            radius: 8
+        }).addTo(sheltersGroup);
+        marker.bindPopup("<b>" + loc.title + "</b><br>" + loc.desc);
+    });
+
+    // Control toggles
+    function toggleLayers() {
+        var floodsChecked = document.getElementById("layerFloods").checked;
+        var firesChecked = document.getElementById("layerFires").checked;
+        var shelterChecked = document.getElementById("layerShelter").checked;
+
+        if (floodsChecked) {
+            map.addLayer(floodsGroup);
+        } else {
+            map.removeLayer(floodsGroup);
+        }
+
+        if (firesChecked) {
+            map.addLayer(firesGroup);
+        } else {
+            map.removeLayer(firesGroup);
+        }
+
+        if (shelterChecked) {
+            map.addLayer(sheltersGroup);
+        } else {
+            map.removeLayer(sheltersGroup);
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- PAGE TITLE AND TOP BUTTONS -->
+    <div class="col-12 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-2">
+        <div>
+            <h2 class="fw-bold mb-1">Missing & Found Persons</h2>
+            <p class="text-muted mb-0">Real-time identification and tracking system for emergency response.</p>
+        </div>
+        <div class="d-flex gap-3 mt-3 mt-md-0">
+            <button class="btn btn-emergency-call d-flex align-items-center gap-2 px-3 py-2">
+                <i class="bi bi-file-earmark-person"></i>
+                <span>Report Missing Person</span>
+            </button>
+            <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2 border-0" style="background-color: var(--brand-blue);">
+                <i class="bi bi-person-check"></i>
+                <span>Report Found Person</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- LEFT COLUMN: FILTERS -->
+    <div class="col-lg-3 col-md-4">
+        <div class="rc-card missing-filters-card">
+            <h5 class="fw-bold mb-3">Filters</h5>
+            
+            <form action="/missing" method="get" id="filterForm">
+                <!-- Status Checkboxes -->
+                <div class="mb-4">
+                    <label class="small fw-semibold text-uppercase text-muted mb-2 d-block">Status</label>
+                    
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="status" id="statusAll" value="All" 
+                               {% if selected_status == 'All' or not selected_status %}checked{% endif %}
+                               onchange="document.getElementById('filterForm').submit()">
+                        <label class="form-check-label fw-semibold" for="statusAll">All Records</label>
+                    </div>
+                    
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="status" id="statusSearching" value="Searching"
+                               {% if selected_status == 'Searching' %}checked{% endif %}
+                               onchange="document.getElementById('filterForm').submit()">
+                        <label class="form-check-label fw-semibold" for="statusSearching">Searching</label>
+                    </div>
+                    
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="status" id="statusHospital" value="In Hospital"
+                               {% if selected_status == 'In Hospital' %}checked{% endif %}
+                               onchange="document.getElementById('filterForm').submit()">
+                        <label class="form-check-label fw-semibold" for="statusHospital">In Hospital</label>
+                    </div>
+                    
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="status" id="statusSafe" value="Found & Safe"
+                               {% if selected_status == 'Found & Safe' %}checked{% endif %}
+                               onchange="document.getElementById('filterForm').submit()">
+                        <label class="form-check-label fw-semibold" for="statusSafe">Found & Safe</label>
+                    </div>
+                </div>
+
+                <!-- Location Radius -->
+                <div class="mb-4">
+                    <label class="small fw-semibold text-uppercase text-muted mb-2 d-block">Location Radius</label>
+                    <input type="range" class="form-range" min="0" max="50" value="25" id="radiusRange">
+                    <div class="d-flex justify-content-between small text-muted font-monospace">
+                        <span>0 km</span>
+                        <span>50 km</span>
+                    </div>
+                </div>
+
+                <!-- Clear Filters Button -->
+                <a href="/missing" class="btn btn-outline-danger w-100 fw-bold py-2" style="font-size: 0.85rem;">Clear All Filters</a>
+            </form>
+        </div>
+    </div>
+
+    <!-- MIDDLE COLUMN: GRID OF MISSING PERSONS -->
+    <div class="col-lg-6 col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="missing-grid-header">Displaying {{ total_records }} records</span>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-secondary active"><i class="bi bi-grid-3x3-gap"></i></button>
+                <button class="btn btn-outline-secondary"><i class="bi bi-list-task"></i></button>
+            </div>
+        </div>
+
+        <div class="row row-cols-1 row-cols-md-2 g-3">
+            {% for person in missing_persons %}
+            <div class="col">
+                <div class="missing-person-card">
+                    <div>
+                        <!-- Custom Placeholder Image fallback using SVG or style shapes if url not defined -->
+                        {% if person.photo_url %}
+                        <img src="{{ person.photo_url }}" class="missing-person-img" alt="{{ person.name }}">
+                        {% else %}
+                        <div class="missing-person-img d-flex align-items-center justify-content-center bg-light text-muted">
+                            <i class="bi bi-person-fill fs-1"></i>
+                        </div>
+                        {% endif %}
+
+                        <!-- Status Badge -->
+                        <span class="missing-person-status-badge {% if person.status == 'Searching' %}searching{% elif person.status == 'In Hospital' %}in-hospital{% else %}found{% endif %}">
+                            {{ person.status }}
+                        </span>
+
+                        <div class="missing-person-body">
+                            <h5 class="missing-person-name">{{ person.name }}</h5>
+                            <p class="missing-person-details mb-2">
+                                <i class="bi bi-geo-alt-fill text-muted"></i> 
+                                {% if person.status == 'In Hospital' %}
+                                Located at: <strong>{{ person.last_seen_location }}</strong>
+                                {% else %}
+                                Last seen: <strong>{{ person.last_seen_location }}</strong>
+                                {% endif %}
+                            </p>
+
+                            <div class="missing-person-tags">
+                                {% if person.age %}
+                                <span class="missing-tag">AGE: {{ person.age }}</span>
+                                {% endif %}
+                                {% if person.height %}
+                                <span class="missing-tag">HEIGHT: {{ person.height }}</span>
+                                {% endif %}
+                                {% if person.condition %}
+                                <span class="missing-tag text-truncate" style="max-width: 150px;">{{ person.condition }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="px-3 pb-3">
+                        {% if person.status == 'Searching' %}
+                        <button class="btn-missing-action">View Details</button>
+                        {% elif person.status == 'In Hospital' %}
+                        <button class="btn-missing-action blue-theme">Connect Family</button>
+                        {% else %}
+                        <div class="text-success text-center fw-bold small py-2">
+                            <i class="bi bi-patch-check-fill"></i> Verification Complete
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12 py-5 text-center text-muted">
+                <i class="bi bi-person-x fs-1"></i>
+                <p class="mt-2">No records found matching the filter criteria.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- RIGHT COLUMN: FAMILY UPDATES -->
+    <div class="col-lg-3">
+        <div class="family-updates-panel">
+            <div>
+                <h5 class="fw-bold d-flex align-items-center gap-2 mb-3">
+                    <i class="bi bi-chat-left-text text-danger"></i> Family Updates
+                </h5>
+                
+                <div class="updates-scroll">
+                    {% for up in family_updates %}
+                    <div class="update-post-card {% if 'Volunteer' in up.author or 'Admin' in up.author %}blue-update{% endif %}">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="update-author">{{ up.author }}</span>
+                            <span class="update-time">Just now</span>
+                        </div>
+                        <p class="update-message">{{ up.message }}</p>
+                    </div>
+                    {% else %}
+                    <!-- fallback defaults matching Figma design -->
+                    <div class="update-post-card">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="update-author">Ali Family</span>
+                            <span class="update-time">10m ago</span>
+                        </div>
+                        <p class="update-message">Riya was wearing a red jacket and carries her medication in a black bag. Please check near medical tents.</p>
+                    </div>
+                    <div class="update-post-card blue-update">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="update-author">Admin Responder</span>
+                            <span class="update-time">25m ago</span>
+                        </div>
+                        <p class="update-message">Zone B in Sylhet has been cleared. Moving search efforts to the Sirajgonj district.</p>
+                    </div>
+                    <div class="update-post-card">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="update-author">Haider Family</span>
+                            <span class="update-time">1h ago</span>
+                        </div>
+                        <p class="update-message">Thank you everyone! Leakot is safe and we are heading to the main shelter.</p>
+                    </div>
+                    <div class="update-post-card blue-update">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="update-author">Volunteer Team 4</span>
+                            <span class="update-time">2h ago</span>
+                        </div>
+                        <p class="update-message">Scanning CCTV footage from the North of Cumilla. Will update if Liza is spotted.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Post Update Form -->
+            <form action="/missing/update" method="post" class="mt-3">
+                <div class="update-input-container">
+                    <input type="text" name="author" class="form-control border-0 bg-transparent p-1 fw-bold small" placeholder="Your name (e.g. Ali Family)" required style="font-size: 0.8rem;">
+                    <textarea name="message" class="form-control border-0 p-1" placeholder="Write an update..." required></textarea>
+                    <button type="submit" class="btn-send-update">
+                        <i class="bi bi-send-fill" style="font-size: 0.75rem;"></i>
+                    </button>
+                </div>
+                <div class="text-center text-muted small mt-2" style="font-size: 0.75rem;">
+                    Updates are verified by command center
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
