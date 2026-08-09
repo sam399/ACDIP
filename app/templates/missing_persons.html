@@ -9,11 +9,11 @@
             <p class="text-muted mb-0">Real-time identification and tracking system for emergency response.</p>
         </div>
         <div class="d-flex gap-3 mt-3 mt-md-0">
-            <button class="btn btn-emergency-call d-flex align-items-center gap-2 px-3 py-2">
+            <button class="btn btn-emergency-call d-flex align-items-center gap-2 px-3 py-2" data-bs-toggle="modal" data-bs-target="#reportMissingModal">
                 <i class="bi bi-file-earmark-person"></i>
                 <span>Report Missing Person</span>
             </button>
-            <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2 border-0" style="background-color: var(--brand-blue);">
+            <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2 border-0" style="background-color: var(--brand-blue);" data-bs-toggle="modal" data-bs-target="#reportFoundModal">
                 <i class="bi bi-person-check"></i>
                 <span>Report Found Person</span>
             </button>
@@ -25,36 +25,36 @@
         <div class="rc-card missing-filters-card">
             <h5 class="fw-bold mb-3">Filters</h5>
             
-            <form action="/missing" method="get" id="filterForm">
+            <div id="filterForm">
                 <!-- Status Checkboxes -->
                 <div class="mb-4">
                     <label class="small fw-semibold text-uppercase text-muted mb-2 d-block">Status</label>
                     
                     <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" name="status" id="statusAll" value="All" 
-                               {% if selected_status == 'All' or not selected_status %}checked{% endif %}
-                               onchange="document.getElementById('filterForm').submit()">
+                        <input class="form-check-input filter-checkbox" type="checkbox" id="statusAll" value="All" 
+                               {% if 'All' in selected_statuses %}checked{% endif %}
+                               onchange="toggleAllFilter(this)">
                         <label class="form-check-label fw-semibold" for="statusAll">All Records</label>
                     </div>
                     
                     <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" name="status" id="statusSearching" value="Searching"
-                               {% if selected_status == 'Searching' %}checked{% endif %}
-                               onchange="document.getElementById('filterForm').submit()">
+                        <input class="form-check-input filter-checkbox status-option" type="checkbox" id="statusSearching" value="Searching"
+                               {% if 'Searching' in selected_statuses %}checked{% endif %}
+                               onchange="applyFilters()">
                         <label class="form-check-label fw-semibold" for="statusSearching">Searching</label>
                     </div>
                     
                     <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" name="status" id="statusHospital" value="In Hospital"
-                               {% if selected_status == 'In Hospital' %}checked{% endif %}
-                               onchange="document.getElementById('filterForm').submit()">
+                        <input class="form-check-input filter-checkbox status-option" type="checkbox" id="statusHospital" value="In Hospital"
+                               {% if 'In Hospital' in selected_statuses %}checked{% endif %}
+                               onchange="applyFilters()">
                         <label class="form-check-label fw-semibold" for="statusHospital">In Hospital</label>
                     </div>
                     
                     <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" name="status" id="statusSafe" value="Found & Safe"
-                               {% if selected_status == 'Found & Safe' %}checked{% endif %}
-                               onchange="document.getElementById('filterForm').submit()">
+                        <input class="form-check-input filter-checkbox status-option" type="checkbox" id="statusSafe" value="Found & Safe"
+                               {% if 'Found & Safe' in selected_statuses %}checked{% endif %}
+                               onchange="applyFilters()">
                         <label class="form-check-label fw-semibold" for="statusSafe">Found & Safe</label>
                     </div>
                 </div>
@@ -71,7 +71,7 @@
 
                 <!-- Clear Filters Button -->
                 <a href="/missing" class="btn btn-outline-danger w-100 fw-bold py-2" style="font-size: 0.85rem;">Clear All Filters</a>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -90,7 +90,6 @@
             <div class="col">
                 <div class="missing-person-card">
                     <div>
-                        <!-- Custom Placeholder Image fallback using SVG or style shapes if url not defined -->
                         {% if person.photo_url %}
                         <img src="{{ person.photo_url }}" class="missing-person-img" alt="{{ person.name }}">
                         {% else %}
@@ -131,9 +130,9 @@
 
                     <div class="px-3 pb-3">
                         {% if person.status == 'Searching' %}
-                        <button class="btn-missing-action">View Details</button>
+                        <button class="btn-missing-action" onclick="alert('Contacting responders for details on {{ person.name }}.')">View Details</button>
                         {% elif person.status == 'In Hospital' %}
-                        <button class="btn-missing-action blue-theme">Connect Family</button>
+                        <button class="btn-missing-action blue-theme" onclick="alert('Opening family connection terminal for {{ person.name }}.')">Connect Family</button>
                         {% else %}
                         <div class="text-success text-center fw-bold small py-2">
                             <i class="bi bi-patch-check-fill"></i> Verification Complete
@@ -145,7 +144,7 @@
             {% else %}
             <div class="col-12 py-5 text-center text-muted">
                 <i class="bi bi-person-x fs-1"></i>
-                <p class="mt-2">No records found matching the filter criteria.</p>
+                <p class="mt-2 mb-0">No records found matching the filter criteria.</p>
             </div>
             {% endfor %}
         </div>
@@ -169,34 +168,13 @@
                         <p class="update-message">{{ up.message }}</p>
                     </div>
                     {% else %}
-                    <!-- fallback defaults matching Figma design -->
+                    <!-- fallback defaults -->
                     <div class="update-post-card">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="update-author">Ali Family</span>
                             <span class="update-time">10m ago</span>
                         </div>
                         <p class="update-message">Riya was wearing a red jacket and carries her medication in a black bag. Please check near medical tents.</p>
-                    </div>
-                    <div class="update-post-card blue-update">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="update-author">Admin Responder</span>
-                            <span class="update-time">25m ago</span>
-                        </div>
-                        <p class="update-message">Zone B in Sylhet has been cleared. Moving search efforts to the Sirajgonj district.</p>
-                    </div>
-                    <div class="update-post-card">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="update-author">Haider Family</span>
-                            <span class="update-time">1h ago</span>
-                        </div>
-                        <p class="update-message">Thank you everyone! Leakot is safe and we are heading to the main shelter.</p>
-                    </div>
-                    <div class="update-post-card blue-update">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="update-author">Volunteer Team 4</span>
-                            <span class="update-time">2h ago</span>
-                        </div>
-                        <p class="update-message">Scanning CCTV footage from the North of Cumilla. Will update if Liza is spotted.</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -218,4 +196,206 @@
         </div>
     </div>
 </div>
+
+<!-- REPORT MISSING PERSON MODAL -->
+<div class="modal fade" id="reportMissingModal" tabindex="-1" aria-labelledby="reportMissingLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="reportMissingLabel">
+                    <i class="bi bi-person-fill-exclamation text-danger me-1"></i> Report Missing Person
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="/missing/report" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="status" value="Searching">
+                
+                <div class="modal-body py-3">
+                    <div class="mb-3">
+                        <label for="missingName" class="form-label small fw-bold text-muted">Full Name *</label>
+                        <input type="text" class="form-control bg-light border-0" id="missingName" name="name" required placeholder="Name of missing person">
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label for="missingAge" class="form-label small fw-bold text-muted">Age</label>
+                            <input type="number" class="form-control bg-light border-0" id="missingAge" name="age" placeholder="e.g. 5">
+                        </div>
+                        <div class="col-6">
+                            <label for="missingHeight" class="form-label small fw-bold text-muted">Height</label>
+                            <input type="text" class="form-control bg-light border-0" id="missingHeight" name="height" placeholder="e.g. 80cm">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="missingCondition" class="form-label small fw-bold text-muted">Special Indicators / Conditions</label>
+                        <input type="text" class="form-control bg-light border-0" id="missingCondition" name="condition" placeholder="e.g. wearing red jacket, diabetic">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="missingLocation" class="form-label small fw-bold text-muted">Last Seen Location *</label>
+                        <input type="text" class="form-control bg-light border-0" id="missingLocation" name="last_seen_location" required placeholder="e.g. Central Road, Cumilla">
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label for="contactName" class="form-label small fw-bold text-muted">Contact Person Name</label>
+                            <input type="text" class="form-control bg-light border-0" id="contactName" name="contact_name" placeholder="Your name">
+                        </div>
+                        <div class="col-6">
+                            <label for="contactPhone" class="form-label small fw-bold text-muted">Contact Phone</label>
+                            <input type="tel" class="form-control bg-light border-0" id="contactPhone" name="contact_phone" placeholder="Your phone number">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-1">
+                        <label class="form-label small fw-bold text-muted">Upload Photo (Optional)</label>
+                        <input type="file" class="form-control bg-light border-0" name="photo" accept="image/*">
+                    </div>
+                </div>
+                
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal" style="border-radius: 6px;">Cancel</button>
+                    <button type="submit" class="btn btn-danger fw-bold border-0" style="background-color: var(--brand-red); border-radius: 6px;">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- REPORT FOUND PERSON MODAL -->
+<div class="modal fade" id="reportFoundModal" tabindex="-1" aria-labelledby="reportFoundLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="reportFoundLabel" style="color: var(--brand-blue);">
+                    <i class="bi bi-person-fill-check me-1"></i> Report Found Person
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="/missing/report" method="post" enctype="multipart/form-data">
+                <div class="modal-body py-3">
+                    <div class="mb-3">
+                        <label for="foundName" class="form-label small fw-bold text-muted">Name (write 'Unknown' if not known) *</label>
+                        <input type="text" class="form-control bg-light border-0" id="foundName" name="name" required placeholder="Name or 'Unknown Child/Adult'">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="foundStatus" class="form-label small fw-bold text-muted">Current Status *</label>
+                        <select class="form-select bg-light border-0" id="foundStatus" name="status" required>
+                            <option value="Found & Safe">Found & Safe (Reunited/Sheltered)</option>
+                            <option value="In Hospital">In Hospital (Receiving medical care)</option>
+                        </select>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label for="foundAge" class="form-label small fw-bold text-muted">Estimated Age</label>
+                            <input type="number" class="form-control bg-light border-0" id="foundAge" name="age" placeholder="e.g. 25">
+                        </div>
+                        <div class="col-6">
+                            <label for="foundHeight" class="form-label small fw-bold text-muted">Height/Details</label>
+                            <input type="text" class="form-control bg-light border-0" id="foundHeight" name="height" placeholder="e.g. 170cm">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="foundCondition" class="form-label small fw-bold text-muted">Condition / Details</label>
+                        <input type="text" class="form-control bg-light border-0" id="foundCondition" name="condition" placeholder="e.g. Condition Stable, Case Closed">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="foundLocation" class="form-label small fw-bold text-muted">Current Location / Facility *</label>
+                        <input type="text" class="form-control bg-light border-0" id="foundLocation" name="last_seen_location" required placeholder="e.g. DMC Medical Wing or Tongi Shelter">
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label for="reporterName" class="form-label small fw-bold text-muted">Your Name</label>
+                            <input type="text" class="form-control bg-light border-0" id="reporterName" name="contact_name" placeholder="Reporter name">
+                        </div>
+                        <div class="col-6">
+                            <label for="reporterPhone" class="form-label small fw-bold text-muted">Your Phone</label>
+                            <input type="tel" class="form-control bg-light border-0" id="reporterPhone" name="contact_phone" placeholder="Reporter phone number">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-1">
+                        <label class="form-label small fw-bold text-muted">Upload Photo (Optional)</label>
+                        <input type="file" class="form-control bg-light border-0" name="photo" accept="image/*">
+                    </div>
+                </div>
+                
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal" style="border-radius: 6px;">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-bold border-0" style="background-color: var(--brand-blue); border-radius: 6px;">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Wire search bar in header to trigger search parameters
+    var searchBar = document.getElementById('searchBar');
+    if (searchBar) {
+        searchBar.value = "{{ search_query }}";
+        
+        searchBar.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                var query = searchBar.value.trim();
+                var currentUrl = new URL(window.location.href);
+                if (query) {
+                    currentUrl.searchParams.set('search', query);
+                } else {
+                    currentUrl.searchParams.delete('search');
+                }
+                window.location.href = currentUrl.toString();
+            }
+        });
+    }
+
+    // Toggle logic for status checkboxes
+    function toggleAllFilter(allCheckbox) {
+        var options = document.querySelectorAll('.status-option');
+        options.forEach(function(opt) {
+            opt.checked = false;
+        });
+        
+        var currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.delete('status');
+        currentUrl.searchParams.set('status', 'All');
+        window.location.href = currentUrl.toString();
+    }
+
+    function applyFilters() {
+        // Uncheck 'All' if any specific status is checked
+        var allCheckbox = document.getElementById('statusAll');
+        var options = document.querySelectorAll('.status-option');
+        
+        var anyChecked = false;
+        var currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.delete('status');
+        
+        options.forEach(function(opt) {
+            if (opt.checked) {
+                currentUrl.searchParams.append('status', opt.value);
+                anyChecked = true;
+            }
+        });
+        
+        if (anyChecked) {
+            allCheckbox.checked = false;
+        } else {
+            allCheckbox.checked = true;
+            currentUrl.searchParams.set('status', 'All');
+        }
+        
+        window.location.href = currentUrl.toString();
+    }
+</script>
 {% endblock %}

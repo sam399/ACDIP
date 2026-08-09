@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, Request, Form, UploadFile, File, BackgroundTasks
+from fastapi import FastAPI, Depends, Request, Form, UploadFile, File, BackgroundTasks, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -243,13 +243,27 @@ async def get_hazards(db: AsyncSession = Depends(get_db)):
     return {"hazards": hazards}
 
 @app.get("/missing", response_class=HTMLResponse)
-async def get_missing_persons(request: Request, status: str = None, db: AsyncSession = Depends(get_db)):
-    # Query missing persons with status filter
+async def get_missing_persons(
+    request: Request, 
+    search: str = None, 
+    status: list[str] = Query(None), 
+    db: AsyncSession = Depends(get_db)
+):
     query = select(MissingPerson)
-    if status and status != "All":
-        query = query.where(MissingPerson.status == status)
-    query = query.order_by(MissingPerson.created_at.desc())
     
+    # 1. Filter by status checkboxes
+    if status and "All" not in status:
+        query = query.where(MissingPerson.status.in_(status))
+        
+    # 2. Filter by search text (name or location)
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.where(
+            (MissingPerson.name.like(search_pattern)) | 
+            (MissingPerson.last_seen_location.like(search_pattern))
+        )
+        
+    query = query.order_by(MissingPerson.created_at.desc())
     persons_result = await db.execute(query)
     missing_persons = persons_result.scalars().all()
     
@@ -257,17 +271,59 @@ async def get_missing_persons(request: Request, status: str = None, db: AsyncSes
     updates_result = await db.execute(select(FamilyUpdate).order_by(FamilyUpdate.created_at.desc()).limit(15))
     family_updates = updates_result.scalars().all()
     
+    # Convert list of statuses to set for quick HTML check rendering
+    selected_statuses = status or ["All"]
+    
     return templates.TemplateResponse(
         request=request,
         name="missing_persons.html",
         context={
             "missing_persons": missing_persons,
             "family_updates": family_updates,
-            "selected_status": status or "All",
+            "selected_statuses": selected_statuses,
+            "search_query": search or "",
             "total_records": len(missing_persons),
             "current_tab": "missing_persons"
         }
     )
+
+@app.post("/missing/report", response_class=RedirectResponse)
+async def submit_missing_report(
+    name: str = Form(...),
+    status: str = Form(...), # Searching, In Hospital, Found & Safe
+    age: int = Form(None),
+    height: str = Form(None),
+    condition: str = Form(None),
+    last_seen_location: str = Form(...),
+    photo: UploadFile = File(None),
+    contact_name: str = Form(None),
+    contact_phone: str = Form(None),
+    db: AsyncSession = Depends(get_db)
+):
+    # Process optional photo upload
+    photo_url = None
+    if photo and photo.filename:
+        filename = f"{int(datetime.now().timestamp())}_mp_{photo.filename}"
+        filepath = os.path.join("app/static/uploads", filename)
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(photo.file, buffer)
+        photo_url = f"/static/uploads/{filename}"
+
+    new_person = MissingPerson(
+        name=name,
+        status=status,
+        age=age,
+        height=height,
+        condition=condition,
+        last_seen_location=last_seen_location,
+        photo_url=photo_url,
+        contact_name=contact_name,
+        contact_phone=contact_phone,
+        created_at=datetime.now(UTC).replace(tzinfo=None)
+    )
+    db.add(new_person)
+    await db.commit()
+    return RedirectResponse(url="/missing", status_code=303)
 
 @app.post("/missing/update", response_class=RedirectResponse)
 async def add_family_update(
