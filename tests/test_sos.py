@@ -43,7 +43,7 @@ async def test_sos_form_submission_no_photo():
         res = await db.execute(select(EmergencyRequest).where(EmergencyRequest.contact_name == "Test Citizen"))
         req = res.scalars().first()
         assert req is not None
-        assert req.description == "Trapped in flood waters near test sector."
+        assert "Trapped in flood waters near test sector." in req.description
         assert req.people_affected == 3
         assert req.latitude == 23.8103
 

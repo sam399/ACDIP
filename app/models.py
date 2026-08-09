@@ -67,3 +67,15 @@ class FamilyUpdate(Base):
     author = Column(String, nullable=False)  # e.g., "Ali Family", "Volunteer Team 4"
     message = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class DamageReport(Base):
+    __tablename__ = "damage_reports"
+    id = Column(Integer, primary_key=True, index=True)
+    damage_type = Column(String, nullable=False)  # e.g., "Broken Road", "Flooding", "Fire Hazard", "Power Outage"
+    location = Column(String, nullable=False)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
+    description = Column(Text, nullable=True)
+    status = Column(String, default="Reported")   # Reported, Verified, Resolved
+    photo_url = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)

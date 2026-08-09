@@ -2,7 +2,7 @@ import asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from app.config import settings
 from app.database import Base
-from app.models import Disaster, EmergencyRequest, SupplyInventory, PersonnelStatus, MissingPerson, FamilyUpdate
+from app.models import Disaster, EmergencyRequest, SupplyInventory, PersonnelStatus, MissingPerson, FamilyUpdate, DamageReport
 
 async def seed():
     print(f"Connecting to database: {settings.DATABASE_URL}")
@@ -66,6 +66,14 @@ async def seed():
             FamilyUpdate(author="Volunteer Team 4", message="Scanning CCTV footage from the North of Cumilla. Will update if Liza is spotted.")
         ]
         session.add_all(updates)
+
+        # 7. Seed Damage Reports (Feature 4 Hazards)
+        damages = [
+            DamageReport(damage_type="Broken Road", location="Rajshahi Highway Bypass", latitude=24.3745, longitude=88.6042, description="Major road erosion blocking supply trucks.", status="Verified"),
+            DamageReport(damage_type="Power Outage", location="Sylhet Sadar Substation", latitude=24.8949, longitude=91.8687, description="Power grid failure due to electrical lines submerged.", status="Reported"),
+            DamageReport(damage_type="Flooding", location="Feni Town Center", latitude=23.0159, longitude=91.3976, description="Feni town completely waterlogged, levels rising.", status="Verified")
+        ]
+        session.add_all(damages)
         
         await session.commit()
     print("Database successfully seeded with Figma design mock data!")

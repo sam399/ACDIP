@@ -271,7 +271,7 @@
         scrollWheelZoom: false
     }).setView([23.8103, 90.4125], 7); // Center on Dhaka, Bangladesh
 
-    // Map style tiles (CartoDB Positron - light map styling matching Figma design style)
+    // Map style tiles (CartoDB Positron)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: 'abcd',
@@ -303,7 +303,7 @@
         { coords: [24.3636, 88.6241], title: "Rajshahi Relief Camp", desc: "Capacity: 40%" }
     ];
 
-    // Functions to place markers
+    // Functions to place static markers
     floodLocations.forEach(function(loc) {
         var circle = L.circle(loc.coords, {
             color: '#dc3545',
@@ -328,6 +328,49 @@
         }).addTo(sheltersGroup);
         marker.bindPopup("<b>" + loc.title + "</b><br>" + loc.desc);
     });
+
+    // Fetch live hazard reports and plot them dynamically
+    fetch('/api/hazards')
+        .then(response => response.json())
+        .then(data => {
+            if (data.hazards) {
+                data.hazards.forEach(function(h) {
+                    var latlng = [h.latitude, h.longitude];
+                    var title = h.type;
+                    var desc = h.description || "No details provided.";
+                    
+                    if (h.type === 'Flooding') {
+                        var circle = L.circle(latlng, {
+                            color: '#0d6efd',
+                            fillColor: '#0d6efd',
+                            fillOpacity: 0.4,
+                            radius: 12000
+                        }).addTo(floodsGroup);
+                        circle.bindPopup("<b>Live Flood: " + h.location + "</b><br>" + desc + "<br><i>Status: " + h.status + "</i>");
+                    } else if (h.type === 'Fire Hazard') {
+                        var marker = L.marker(latlng).addTo(firesGroup);
+                        marker.bindPopup("<b>Live Fire: " + h.location + "</b><br>" + desc + "<br><i>Status: " + h.status + "</i>");
+                    } else if (h.type === 'Broken Road') {
+                        var circle = L.circle(latlng, {
+                            color: '#fd7e14', // Orange
+                            fillColor: '#fd7e14',
+                            fillOpacity: 0.6,
+                            radius: 8000
+                        }).addTo(floodsGroup);
+                        circle.bindPopup("<b>Broken Road: " + h.location + "</b><br>" + desc + "<br><i>Status: " + h.status + "</i>");
+                    } else if (h.type === 'Power Outage') {
+                        var circle = L.circle(latlng, {
+                            color: '#ffc107', // Yellow
+                            fillColor: '#ffc107',
+                            fillOpacity: 0.6,
+                            radius: 6000
+                        }).addTo(floodsGroup);
+                        circle.bindPopup("<b>Power Outage: " + h.location + "</b><br>" + desc + "<br><i>Status: " + h.status + "</i>");
+                    }
+                });
+            }
+        })
+        .catch(err => console.error("Error loading map hazards: ", err));
 
     // Control toggles
     function toggleLayers() {

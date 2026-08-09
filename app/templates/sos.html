@@ -101,25 +101,25 @@
         <h5 class="fw-bold mt-5 mb-3">Report Flood Damage</h5>
         <div class="row g-3">
             <div class="col-6 col-md-3">
-                <div class="rc-card text-center p-3 h-100 cursor-pointer hover-shadow" onclick="quickReport('Broken Road', 'Broken road reported blocking emergency response routes.')">
+                <div class="rc-card text-center p-3 h-100 cursor-pointer hover-shadow" onclick="openDamageModal('Broken Road')">
                     <i class="bi bi-signpost-split fs-2 text-danger"></i>
                     <h6 class="fw-bold mt-2 mb-0" style="font-size: 0.85rem;">Broken Road</h6>
                 </div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="rc-card text-center p-3 h-100 cursor-pointer hover-shadow" onclick="quickReport('Flood Damage', 'Severe flooding in residential areas requiring pumping or rescue.')">
+                <div class="rc-card text-center p-3 h-100 cursor-pointer hover-shadow" onclick="openDamageModal('Flooding')">
                     <i class="bi bi-water fs-2 text-danger"></i>
                     <h6 class="fw-bold mt-2 mb-0" style="font-size: 0.85rem;">Flooding</h6>
                 </div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="rc-card text-center p-3 h-100 cursor-pointer hover-shadow" onclick="quickReport('Fire Hazard', 'Active fire hazard reported near community structures.')">
+                <div class="rc-card text-center p-3 h-100 cursor-pointer hover-shadow" onclick="openDamageModal('Fire Hazard')">
                     <i class="bi bi-fire fs-2 text-danger"></i>
                     <h6 class="fw-bold mt-2 mb-0" style="font-size: 0.85rem;">Fire Hazard</h6>
                 </div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="rc-card text-center p-3 h-100 cursor-pointer hover-shadow" onclick="quickReport('Power Outage', 'Power lines down resulting in localized electricity outage.')">
+                <div class="rc-card text-center p-3 h-100 cursor-pointer hover-shadow" onclick="openDamageModal('Power Outage')">
                     <i class="bi bi-lightning-charge fs-2 text-danger"></i>
                     <h6 class="fw-bold mt-2 mb-0" style="font-size: 0.85rem;">Outage</h6>
                 </div>
@@ -201,6 +201,59 @@
         </div>
     </div>
 </div>
+
+<!-- DYNAMIC DAMAGE REPORT MODAL -->
+<div class="modal fade" id="damageModal" tabindex="-1" aria-labelledby="damageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="damageModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill text-danger me-1"></i> Report Damage
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="/sos/damage" method="post" enctype="multipart/form-data">
+                <div class="modal-body py-3">
+                    <input type="hidden" name="damage_type" id="modalDamageType">
+                    <input type="hidden" name="latitude" id="modalLat">
+                    <input type="hidden" name="longitude" id="modalLng">
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Incident Type</label>
+                        <input type="text" class="form-control bg-light border-0 fw-bold" id="modalDamageTypeDisplay" readonly style="color: var(--brand-red);">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modalLocation" class="form-label small fw-bold text-muted">Location *</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-light border-0" id="modalLocation" name="location" placeholder="e.g. Near Satkhira School" required>
+                            <button class="btn btn-primary border-0" style="background-color: var(--brand-blue);" type="button" onclick="detectModalLocation()">
+                                <i class="bi bi-geo-alt-fill"></i>
+                            </button>
+                        </div>
+                        <div id="modalGeoStatus" class="form-text small text-muted d-none"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modalDescription" class="form-label small fw-bold text-muted">Describe the hazard / damage</label>
+                        <textarea class="form-control bg-light border-0" id="modalDescription" name="description" rows="3" placeholder="Provide details like road blocking status or threat scope..."></textarea>
+                    </div>
+
+                    <div class="mb-1">
+                        <label class="form-label small fw-bold text-muted">Attach Photo (Optional)</label>
+                        <input type="file" class="form-control bg-light border-0" name="photo" accept="image/*">
+                    </div>
+                </div>
+                
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal" style="border-radius: 6px;">Cancel</button>
+                    <button type="submit" class="btn btn-danger fw-bold border-0" style="background-color: var(--brand-red); border-radius: 6px;">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -255,14 +308,49 @@
         );
     }
 
-    // Pre-populate details from quick damage report
-    function quickReport(type, desc) {
-        document.getElementById('requestType').value = type;
-        document.getElementById('description').value = desc;
-        document.getElementById('fullName').focus();
+    // Modal popup triggers
+    function openDamageModal(type) {
+        document.getElementById('modalDamageType').value = type;
+        document.getElementById('modalDamageTypeDisplay').value = type;
+        document.getElementById('modalDescription').value = "";
+        document.getElementById('modalLocation').value = "";
+        document.getElementById('modalLat').value = "";
+        document.getElementById('modalLng').value = "";
+        document.getElementById('modalGeoStatus').classList.add('d-none');
         
-        // Scroll slightly to top of form
-        document.getElementById('sosForm').scrollIntoView({ behavior: 'smooth' });
+        var myModal = new bootstrap.Modal(document.getElementById('damageModal'));
+        myModal.show();
+    }
+
+    function detectModalLocation() {
+        var status = document.getElementById('modalGeoStatus');
+        status.classList.remove('d-none');
+        status.className = "form-text small text-primary";
+        status.innerText = "Detecting your location...";
+
+        if (!navigator.geolocation) {
+            status.className = "form-text small text-danger";
+            status.innerText = "Geolocation not supported.";
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                var lat = position.coords.latitude;
+                var lng = position.coords.longitude;
+                
+                document.getElementById('modalLat').value = lat;
+                document.getElementById('modalLng').value = lng;
+                document.getElementById('modalLocation').value = "Coordinates: " + lat.toFixed(5) + ", " + lng.toFixed(5);
+                
+                status.className = "form-text small text-success";
+                status.innerText = "Location detected successfully!";
+            },
+            function(error) {
+                status.className = "form-text small text-danger";
+                status.innerText = "Error: " + error.message;
+            }
+        );
     }
 
     // Trigger quick SOS automatically
@@ -311,12 +399,10 @@
             }).addTo(miniMap);
         }
 
-        // Place shelter marker offset slightly to mock 0.8km away
         var shelterLat = lat + 0.005;
         var shelterLng = lng + 0.004;
         shelterMarker.setLatLng([shelterLat, shelterLng]);
         
-        // Dynamic distance calculation label (mocking exact bounds checking)
         document.getElementById('shelterDistanceText').innerText = "Nearest Shelter: 0.78km away";
     }
 </script>

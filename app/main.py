@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import engine, Base, get_db, SessionLocal
-from app.models import Disaster, EmergencyRequest, SupplyInventory, PersonnelStatus, MissingPerson, FamilyUpdate
+from app.models import Disaster, EmergencyRequest, SupplyInventory, PersonnelStatus, MissingPerson, FamilyUpdate, DamageReport
 from app.ai_service import analyze_emergency_priority
 from datetime import datetime, UTC
 import os
@@ -185,6 +185,62 @@ async def submit_sos_request(
     response = RedirectResponse(url="/sos", status_code=303)
     response.set_cookie(key="my_requests", value=updated_cookie, max_age=3600*24*30) # 30 days
     return response
+
+@app.post("/sos/damage", response_class=RedirectResponse)
+async def submit_damage_report(
+    damage_type: str = Form(...),
+    location: str = Form(...),
+    description: str = Form(None),
+    latitude: float = Form(None),
+    longitude: float = Form(None),
+    photo: UploadFile = File(None),
+    db: AsyncSession = Depends(get_db)
+):
+    # Process optional photo upload
+    photo_url = None
+    if photo and photo.filename:
+        filename = f"{int(datetime.now().timestamp())}_dmg_{photo.filename}"
+        filepath = os.path.join("app/static/uploads", filename)
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(photo.file, buffer)
+        photo_url = f"/static/uploads/{filename}"
+
+    # Default description
+    if not description:
+        description = f"Reported {damage_type.lower()} infrastructure damage."
+
+    new_report = DamageReport(
+        damage_type=damage_type,
+        location=location,
+        latitude=latitude,
+        longitude=longitude,
+        description=description,
+        status="Reported",
+        photo_url=photo_url,
+        created_at=datetime.now(UTC).replace(tzinfo=None)
+    )
+    db.add(new_report)
+    await db.commit()
+    return RedirectResponse(url="/sos", status_code=303)
+
+@app.get("/api/hazards")
+async def get_hazards(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(DamageReport).where(DamageReport.status != "Resolved"))
+    reports = result.scalars().all()
+    
+    hazards = []
+    for r in reports:
+        if r.latitude and r.longitude:
+            hazards.append({
+                "id": r.id,
+                "type": r.damage_type,
+                "location": r.location,
+                "latitude": r.latitude,
+                "longitude": r.longitude,
+                "description": r.description,
+                "status": r.status
+            })
+    return {"hazards": hazards}
 
 @app.get("/missing", response_class=HTMLResponse)
 async def get_missing_persons(request: Request, status: str = None, db: AsyncSession = Depends(get_db)):
