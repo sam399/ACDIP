@@ -1,0 +1,323 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- TOP RED SOS BANNER -->
+    <div class="col-12">
+        <div class="alert bg-danger text-white text-center py-4 mb-2 rounded-3 border-0 shadow-sm" style="background-color: var(--brand-red) !important; cursor: pointer;" onclick="quickSOS()">
+            <h1 class="fw-bold mb-2 tracking-tight">SOS EMERGENCY RELIEF REQUEST</h1>
+            <p class="mb-0 fs-6 fw-light">Press here for immediate medical, food, or rescue assistance</p>
+        </div>
+    </div>
+
+    <!-- LEFT COLUMN: REQUEST SUBMISSION FORM -->
+    <div class="col-lg-8">
+        <div class="rc-card">
+            <h4 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                <i class="bi bi-file-earmark-medical text-danger"></i> Submit Relief Request
+            </h4>
+            
+            <form action="/sos/submit" method="post" enctype="multipart/form-data" id="sosForm">
+                <!-- Hidden inputs for coordinates -->
+                <input type="hidden" name="latitude" id="latInput">
+                <input type="hidden" name="longitude" id="lngInput">
+
+                <div class="row g-3 mb-3">
+                    <!-- Full Name -->
+                    <div class="col-md-6">
+                        <label for="fullName" class="form-label small fw-bold text-muted">Full Name *</label>
+                        <input type="text" class="form-control py-2 bg-light border-0" id="fullName" name="full_name" placeholder="Mr Raja" required>
+                    </div>
+                    
+                    <!-- Phone Number -->
+                    <div class="col-md-6">
+                        <label for="phoneNumber" class="form-label small fw-bold text-muted">Phone Number *</label>
+                        <input type="tel" class="form-control py-2 bg-light border-0" id="phoneNumber" name="phone_number" placeholder="+8801632......" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <!-- Location with Auto-detect -->
+                    <label for="location" class="form-label small fw-bold text-muted">Location *</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control py-2 bg-light border-0" id="location" name="location" placeholder="Cox's Bazar" required>
+                        <button class="btn btn-primary d-flex align-items-center gap-1 border-0" style="background-color: var(--brand-blue);" type="button" onclick="detectLocation()">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <span>Auto-detect</span>
+                        </button>
+                    </div>
+                    <div class="form-text small text-muted d-none" id="geoStatus"></div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <!-- People Affected Counter -->
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">Number of People Affected *</label>
+                        <div class="d-flex align-items-center bg-light rounded" style="width: 140px; height: 42px;">
+                            <button type="button" class="btn btn-link text-decoration-none text-dark fw-bold px-3" onclick="decrementPeople()">-</button>
+                            <input type="number" class="form-control border-0 bg-transparent text-center fw-bold p-0" id="peopleCounter" name="people_affected" value="1" min="1" required style="width: 40px; box-shadow: none;">
+                            <button type="button" class="btn btn-link text-decoration-none text-dark fw-bold px-3" onclick="incrementPeople()">+</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Request Type Dropdown -->
+                    <div class="col-md-6">
+                        <label for="requestType" class="form-label small fw-bold text-muted">Request Type *</label>
+                        <select class="form-select py-2 bg-light border-0" id="requestType" name="request_type" required>
+                            <option value="Medical Emergency">Medical Emergency</option>
+                            <option value="Rescue Service">Rescue Service</option>
+                            <option value="Food & Water">Food & Water</option>
+                            <option value="Flood Damage">Flood Damage</option>
+                            <option value="Power Outage">Power Outage</option>
+                            <option value="Other">Other Support</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <!-- Description -->
+                    <label for="description" class="form-label small fw-bold text-muted">Description (What assistance is needed?)</label>
+                    <textarea class="form-control bg-light border-0" id="description" name="description" rows="3" placeholder="Describe your situation here..."></textarea>
+                </div>
+
+                <!-- Custom styled upload box -->
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-muted">Upload Photo (Optional)</label>
+                    <div class="border border-2 border-dashed rounded-3 p-4 text-center cursor-pointer bg-light" style="border-color: #E0D5D0 !important;" onclick="document.getElementById('fileInput').click()">
+                        <i class="bi bi-camera-fill fs-2 text-muted"></i>
+                        <h6 class="fw-bold mt-2 mb-1">Tap to take or upload a photo</h6>
+                        <span class="text-muted small">Max size 10MB • JPG, PNG</span>
+                        <input type="file" id="fileInput" name="photo" accept="image/*" class="d-none" onchange="updateUploadLabel(this)">
+                        <div id="fileUploadName" class="text-success small fw-bold mt-2"></div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-deploy-response py-3 fw-bold">Submit Emergency Request</button>
+            </form>
+        </div>
+
+        <!-- QUICK REPORT FLOOD DAMAGE SECTION -->
+        <h5 class="fw-bold mt-5 mb-3">Report Flood Damage</h5>
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <div class="rc-card text-center p-3 h-100 cursor-pointer hover-shadow" onclick="quickReport('Broken Road', 'Broken road reported blocking emergency response routes.')">
+                    <i class="bi bi-signpost-split fs-2 text-danger"></i>
+                    <h6 class="fw-bold mt-2 mb-0" style="font-size: 0.85rem;">Broken Road</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="rc-card text-center p-3 h-100 cursor-pointer hover-shadow" onclick="quickReport('Flood Damage', 'Severe flooding in residential areas requiring pumping or rescue.')">
+                    <i class="bi bi-water fs-2 text-danger"></i>
+                    <h6 class="fw-bold mt-2 mb-0" style="font-size: 0.85rem;">Flooding</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="rc-card text-center p-3 h-100 cursor-pointer hover-shadow" onclick="quickReport('Fire Hazard', 'Active fire hazard reported near community structures.')">
+                    <i class="bi bi-fire fs-2 text-danger"></i>
+                    <h6 class="fw-bold mt-2 mb-0" style="font-size: 0.85rem;">Fire Hazard</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="rc-card text-center p-3 h-100 cursor-pointer hover-shadow" onclick="quickReport('Power Outage', 'Power lines down resulting in localized electricity outage.')">
+                    <i class="bi bi-lightning-charge fs-2 text-danger"></i>
+                    <h6 class="fw-bold mt-2 mb-0" style="font-size: 0.85rem;">Outage</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT COLUMN: MY REQUESTS & NEAREST SHELTER -->
+    <div class="col-lg-4">
+        <!-- My Requests live tracking panel -->
+        <div class="rc-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                    <i class="bi bi-activity text-danger"></i> My Requests
+                </h5>
+                <span class="badge bg-danger px-2 py-1 font-monospace" style="font-size: 0.65rem;">LIVE UPDATE</span>
+            </div>
+            
+            <div class="requests-list-container">
+                {% for req in my_requests %}
+                <div class="border rounded p-3 mb-3 bg-light position-relative">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small font-monospace fw-bold text-danger">REQ-{{ "%04d" | format(req.id) }}</span>
+                        <span class="badge {% if req.status == 'Pending' %}bg-warning-subtle text-warning border border-warning-subtle{% elif req.status == 'En Route' %}bg-primary-subtle text-primary border border-primary-subtle{% else %}bg-success-subtle text-success border border-success-subtle{% endif %} px-2 py-1 small">
+                            {{ req.status }}
+                        </span>
+                    </div>
+                    
+                    <h6 class="fw-bold mb-1" style="font-size: 0.9rem;">{{ req.request_type }}</h6>
+                    <p class="text-muted small mb-2">{{ req.description }}</p>
+                    
+                    <!-- Progress Bar matching Figma style -->
+                    {% if req.status == 'En Route' %}
+                    <div class="small mb-1 text-primary fw-semibold"><i class="bi bi-clock-history"></i> Responder dispatched 4 mins ago</div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 60%"></div>
+                    </div>
+                    {% elif req.status == 'Pending' %}
+                    <div class="small mb-1 text-muted"><i class="bi bi-hourglass-split"></i> Queued for verification</div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 25%"></div>
+                    </div>
+                    {% else %}
+                    <div class="small mb-1 text-success"><i class="bi bi-check-circle"></i> Service Completed</div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted small">
+                    <i class="bi bi-journal-x fs-2 d-block mb-2"></i>
+                    No requests submitted yet in this session.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Info box sharing location -->
+        <div class="alert alert-info border-0 p-3 mb-4 rounded-3 d-flex gap-3 align-items-start" style="background-color: var(--selected-purple-light); color: var(--brand-blue);">
+            <div class="fs-4"><i class="bi bi-info-circle-fill"></i></div>
+            <div class="small">
+                <strong class="d-block mb-1">Real-time Tracking</strong>
+                Your location is being shared with emergency units once a request is active.
+            </div>
+        </div>
+
+        <!-- Nearest Shelter map widget -->
+        <div class="rc-card p-0 overflow-hidden position-relative" style="height: 220px;">
+            <div id="miniMap" class="w-100 h-100" style="background-color: #e5e5e5; z-index: 1;"></div>
+            
+            <div class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-70 text-white p-3 d-flex align-items-center justify-content-between" style="z-index: 1000;">
+                <div>
+                    <h6 class="fw-bold mb-0" style="font-size: 0.9rem;">Nearest Shelter</h6>
+                    <span class="small opacity-80" id="shelterDistanceText">Nearest Shelter: 0.8km away</span>
+                </div>
+                <div class="fs-4 text-white"><i class="bi bi-chevron-right"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Counter functions
+    function incrementPeople() {
+        var input = document.getElementById('peopleCounter');
+        input.value = parseInt(input.value) + 1;
+    }
+    
+    function decrementPeople() {
+        var input = document.getElementById('peopleCounter');
+        var val = parseInt(input.value);
+        if (val > 1) {
+            input.value = val - 1;
+        }
+    }
+
+    // Geolocation detection
+    function detectLocation() {
+        var status = document.getElementById('geoStatus');
+        status.classList.remove('d-none');
+        status.className = "form-text small text-primary";
+        status.innerText = "Detecting your location...";
+
+        if (!navigator.geolocation) {
+            status.className = "form-text small text-danger";
+            status.innerText = "Geolocation is not supported by your browser.";
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                var lat = position.coords.latitude;
+                var lng = position.coords.longitude;
+                
+                document.getElementById('latInput').value = lat;
+                document.getElementById('lngInput').value = lng;
+                
+                document.getElementById('location').value = "Coordinates: " + lat.toFixed(5) + ", " + lng.toFixed(5);
+                
+                status.className = "form-text small text-success";
+                status.innerText = "Location detected successfully!";
+                
+                // Update mini-map coordinates
+                updateMiniMap(lat, lng);
+            },
+            function(error) {
+                status.className = "form-text small text-danger";
+                status.innerText = "Unable to retrieve location: " + error.message;
+            }
+        );
+    }
+
+    // Pre-populate details from quick damage report
+    function quickReport(type, desc) {
+        document.getElementById('requestType').value = type;
+        document.getElementById('description').value = desc;
+        document.getElementById('fullName').focus();
+        
+        // Scroll slightly to top of form
+        document.getElementById('sosForm').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Trigger quick SOS automatically
+    function quickSOS() {
+        document.getElementById('requestType').value = "Rescue Service";
+        document.getElementById('description').value = "URGENT SOS: Citizen requesting immediate evacuation and safety assistance.";
+        document.getElementById('fullName').focus();
+        document.getElementById('sosForm').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Update custom file upload label
+    function updateUploadLabel(input) {
+        var label = document.getElementById('fileUploadName');
+        if (input.files && input.files[0]) {
+            label.innerText = "Selected file: " + input.files[0].name;
+        } else {
+            label.innerText = "";
+        }
+    }
+
+    // Initialize mini-map for shelter visualization
+    var miniMap = L.map('miniMap', {
+        zoomControl: false,
+        attributionControl: false
+    }).setView([23.8103, 90.4125], 13); // Default Dhaka
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 20
+    }).addTo(miniMap);
+
+    var userMarker = null;
+    var shelterMarker = L.marker([23.8143, 90.4185]).addTo(miniMap); // Sample shelter
+    shelterMarker.bindPopup("Nearest Shelter Center");
+
+    function updateMiniMap(lat, lng) {
+        miniMap.setView([lat, lng], 14);
+        
+        if (userMarker) {
+            userMarker.setLatLng([lat, lng]);
+        } else {
+            userMarker = L.circleMarker([lat, lng], {
+                color: '#dc3545',
+                fillColor: '#dc3545',
+                fillOpacity: 0.8,
+                radius: 6
+            }).addTo(miniMap);
+        }
+
+        // Place shelter marker offset slightly to mock 0.8km away
+        var shelterLat = lat + 0.005;
+        var shelterLng = lng + 0.004;
+        shelterMarker.setLatLng([shelterLat, shelterLng]);
+        
+        // Dynamic distance calculation label (mocking exact bounds checking)
+        document.getElementById('shelterDistanceText').innerText = "Nearest Shelter: 0.78km away";
+    }
+</script>
+{% endblock %}

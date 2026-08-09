@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, Request, Form
+from fastapi import FastAPI, Depends, Request, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -7,8 +7,14 @@ from sqlalchemy import select
 from app.database import engine, Base, get_db
 from app.models import Disaster, EmergencyRequest, SupplyInventory, PersonnelStatus, MissingPerson, FamilyUpdate
 from datetime import datetime, UTC
+import os
+import shutil
 
 app = FastAPI(title="RESPOND-ER Command Center")
+
+# Ensure static directories exist
+os.makedirs("app/static/css", exist_ok=True)
+os.makedirs("app/static/uploads", exist_ok=True)
 
 # Mount static files and templates
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -57,7 +63,6 @@ async def get_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     
     total_requests_count = len(priority_queue)
     
-    # Render main dashboard using modern Starlette TemplateResponse signature
     return templates.TemplateResponse(
         request=request,
         name="dashboard.html",
@@ -72,6 +77,94 @@ async def get_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
             "current_tab": "dashboard"
         }
     )
+
+@app.get("/sos", response_class=HTMLResponse)
+async def get_sos_page(request: Request, db: AsyncSession = Depends(get_db)):
+    # Read client request IDs from cookies to populate "My Requests"
+    my_requests_cookie = request.cookies.get("my_requests", "")
+    my_requests = []
+    
+    if my_requests_cookie:
+        try:
+            ids = [int(x) for x in my_requests_cookie.split(",") if x.strip().isdigit()]
+            if ids:
+                query = await db.execute(
+                    select(EmergencyRequest)
+                    .where(EmergencyRequest.id.in_(ids))
+                    .order_by(EmergencyRequest.created_at.desc())
+                )
+                my_requests = query.scalars().all()
+        except Exception:
+            pass # Ignore malformed cookies
+            
+    return templates.TemplateResponse(
+        request=request,
+        name="sos.html",
+        context={
+            "my_requests": my_requests,
+            "current_tab": "sos"
+        }
+    )
+
+@app.post("/sos/submit", response_class=RedirectResponse)
+async def submit_sos_request(
+    request: Request,
+    full_name: str = Form(...),
+    phone_number: str = Form(...),
+    location: str = Form(...),
+    people_affected: int = Form(...),
+    request_type: str = Form(...),
+    description: str = Form(None),
+    latitude: float = Form(None),
+    longitude: float = Form(None),
+    photo: UploadFile = File(None),
+    db: AsyncSession = Depends(get_db)
+):
+    # Process optional photo upload
+    photo_url = None
+    if photo and photo.filename:
+        filename = f"{int(datetime.now().timestamp())}_{photo.filename}"
+        filepath = os.path.join("app/static/uploads", filename)
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(photo.file, buffer)
+        photo_url = f"/static/uploads/{filename}"
+
+    # Default description if not supplied
+    if not description:
+        description = f"Emergency request for {request_type.lower()} support."
+
+    # Create new emergency request
+    new_request = EmergencyRequest(
+        title=f"{request_type}: {description[:30]}...",
+        description=description,
+        priority="High", # default priority level
+        location=location,
+        latitude=latitude,
+        longitude=longitude,
+        status="Pending",
+        people_affected=people_affected,
+        request_type=request_type,
+        contact_name=full_name,
+        contact_phone=phone_number,
+        photo_url=photo_url,
+        created_at=datetime.now(UTC).replace(tzinfo=None)
+    )
+    
+    db.add(new_request)
+    await db.flush() # Populate new_request.id
+    
+    # Save request ID to cookies
+    my_requests_cookie = request.cookies.get("my_requests", "")
+    if my_requests_cookie:
+        updated_cookie = f"{my_requests_cookie},{new_request.id}"
+    else:
+        updated_cookie = str(new_request.id)
+        
+    await db.commit()
+    
+    response = RedirectResponse(url="/sos", status_code=303)
+    response.set_cookie(key="my_requests", value=updated_cookie, max_age=3600*24*30) # 30 days
+    return response
 
 @app.get("/missing", response_class=HTMLResponse)
 async def get_missing_persons(request: Request, status: str = None, db: AsyncSession = Depends(get_db)):
@@ -106,7 +199,6 @@ async def add_family_update(
     message: str = Form(...),
     db: AsyncSession = Depends(get_db)
 ):
-    # Add a family update to the database (timezone-aware UTC)
     new_update = FamilyUpdate(
         author=author,
         message=message,
