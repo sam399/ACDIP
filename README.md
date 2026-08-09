@@ -6,11 +6,12 @@ RESPOND-ER is an AI-powered disaster response, resource coordination, and commun
 
 ## 🚀 Current Project State
 
-We have completed the core foundation of **Module 1 (Disaster Response Management)**, including:
+We have completed the entire implementation of **Module 1 (Disaster Response Management)**, including:
 1. **Feature 1: Disaster Dashboard** (Dhaka Operations Command Center view, interactive Leaflet.js maps, active disaster lists, supply statistics, and personnel allocation).
 2. **Feature 2: Emergency Relief Request** (Citizen SOS portal with counter widgets, browser geolocation auto-detection, photo upload capability, and session-based request status tracking).
 3. **Feature 3: AI Emergency Prioritization** (Gemini API integration that triages citizen requests asynchronously in background threads, featuring a rules-based fallback engine for offline reliability).
-4. **Feature 5 Schema Foundation** (Pre-designed missing & found persons directory layouts and family updates database structure).
+4. **Feature 4: Damage Reporting** (Citizens report public infrastructure damage such as broken roads, flooding, fire hazards, and outages via pop-up modals, rendering dynamic color-coded markers directly onto the Command Center map).
+5. **Feature 5: Missing & Found Person Management** (Filing missing/found reports with photos, filtering directory lists by checkboxes, text-searching records from the global search bar, and posting family updates).
 
 ---
 
@@ -46,7 +47,8 @@ ACDIP/
 ├── tests/               # Pytest testing suite
 │   ├── test_dashboard.py
 │   ├── test_sos.py
-│   └── test_ai.py
+│   ├── test_ai.py
+│   └── test_missing.py
 ├── requirements.txt     # Dependency lists
 ├── seed.py              # Mock data database seed script
 └── README.md
@@ -77,7 +79,7 @@ pip install -r requirements.txt
 ```
 
 ### 3. Initialize & Seed Database
-This creates the local database file `respond_er.db` and populates it with active events, inventory counts, and triage requests matching the Figma screens:
+This creates the local database file `respond_er.db` and populates it with active events, inventory counts, missing people, and triage requests matching the Figma screens:
 ```bash
 python seed.py
 ```
