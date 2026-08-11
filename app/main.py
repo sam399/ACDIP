@@ -5,7 +5,11 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import engine, Base, get_db, SessionLocal
-from app.models import Disaster, EmergencyRequest, SupplyInventory, PersonnelStatus, MissingPerson, FamilyUpdate, DamageReport, Donation, Shelter
+from app.models import (
+    Disaster, EmergencyRequest, SupplyInventory, PersonnelStatus, 
+    MissingPerson, FamilyUpdate, DamageReport, Donation, Shelter, 
+    CommunityResource, Volunteer, ReliefDistribution
+)
 from app.ai_service import analyze_emergency_priority
 from datetime import datetime, UTC
 import os
@@ -495,20 +499,128 @@ async def update_shelter_capacity(
 
     return HTMLResponse(content="")
 
-# Placeholders for future routes in other features
-@app.get("/tracking", response_class=HTMLResponse)
-async def get_tracking(request: Request):
-	return templates.TemplateResponse(
-		request=request,
-		name="base.html",
-		context={"current_tab": "tracking", "message": "Tracking view coming soon."}
-	)
+# --- MODULE 2 ROUTES ---
 
 @app.get("/resources", response_class=HTMLResponse)
-async def get_resources(request: Request):
-	return templates.TemplateResponse(
-		request=request,
-		name="base.html",
-		context={"current_tab": "resources", "message": "Resources view coming soon."}
-	)
+async def get_resources(request: Request, db: AsyncSession = Depends(get_db)):
+    res_query = await db.execute(select(CommunityResource))
+    resources = res_query.scalars().all()
+    
+    # Calculate aggregation counts for legend
+    counts = {
+        "boats": sum(1 for r in resources if r.resource_type == "Emergency Boat"),
+        "generators": sum(1 for r in resources if r.resource_type == "Power Generator"),
+        "kitchens": sum(1 for r in resources if r.resource_type == "Relief Kitchen"),
+        "pumps": sum(1 for r in resources if r.resource_type == "Water Pump"),
+    }
+    
+    # Query NGO inventories
+    inventory_items = [
+        {"item": "Surgical Masks", "location": "Central Warehouse", "stock": "12,400", "trend": "+ 12%"},
+        {"item": "First Aid Kits", "location": "North Field Hub", "stock": "842", "trend": "- 5%"},
+        {"item": "LED Torches", "location": "South Field Hub", "stock": "2,100", "trend": "--"},
+        {"item": "Water Tabs", "location": "West Mobile Unit", "stock": "150,000", "trend": "+ 45%"}
+    ]
+    
+    return templates.TemplateResponse(
+        request=request,
+        name="resources.html",
+        context={
+            "resources": resources,
+            "counts": counts,
+            "inventory_items": inventory_items,
+            "current_tab": "resources"
+        }
+    )
 
+@app.post("/resources/donate", response_class=RedirectResponse)
+async def submit_donation(
+    donor_name: str = Form(...),
+    item_type: str = Form(...), # Food, Medicine, Clothes, Water, Blankets
+    quantity: int = Form(...),
+    db: AsyncSession = Depends(get_db)
+):
+    # 1. Save Donation Record
+    new_donation = Donation(
+        donor_name=donor_name,
+        item_type=item_type,
+        quantity=quantity,
+        status="Received",
+        created_at=datetime.utcnow()
+    )
+    db.add(new_donation)
+    
+    # 2. Dynamically update SupplyInventory counters
+    inventory_mapping = {
+        "Medicine": "Medical Kits",
+        "Water": "Drinking Water",
+        "Food": "Emergency Meals"
+    }
+    
+    if item_type in inventory_mapping:
+        inv_name = inventory_mapping[item_type]
+        result = await db.execute(select(SupplyInventory).where(SupplyInventory.item_name == inv_name))
+        inv = result.scalars().first()
+        if inv:
+            inv.quantity += quantity
+        else:
+            # Fallback insertion
+            new_inv = SupplyInventory(
+                item_name=inv_name,
+                quantity=quantity,
+                unit="L" if item_type == "Water" else "kits" if item_type == "Medicine" else "meals",
+                critical_threshold=500
+            )
+            db.add(new_inv)
+            
+    await db.commit()
+    return RedirectResponse(url="/resources", status_code=303)
+
+@app.get("/tracking", response_class=HTMLResponse)
+async def get_tracking(request: Request, db: AsyncSession = Depends(get_db)):
+    dist_query = await db.execute(select(ReliefDistribution).order_by(ReliefDistribution.date.desc()))
+    distributions = dist_query.scalars().all()
+    
+    # Statistics calculations
+    total_flagged = sum(1 for d in distributions if d.status == "Duplicate Flag")
+    conflict_intercepts = sum(1 for d in distributions if d.status == "Duplicate Flag" or d.resource_quantity >= 1000)
+    estimated_savings = sum(d.resource_quantity * 5 for d in distributions if d.status == "Duplicate Flag") # mock math
+    
+    return templates.TemplateResponse(
+        request=request,
+        name="tracking.html",
+        context={
+            "distributions": distributions,
+            "total_flagged": total_flagged,
+            "conflict_intercepts": conflict_intercepts,
+            "estimated_savings": f"${estimated_savings:,}" if estimated_savings else "$0",
+            "current_tab": "tracking"
+        }
+    )
+
+@app.get("/api/resources")
+async def get_resources_api(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(CommunityResource))
+    resources = result.scalars().all()
+    return {
+        "resources": [
+            {
+                "id": r.id,
+                "type": r.resource_type,
+                "location": r.location,
+                "latitude": r.latitude,
+                "longitude": r.longitude,
+                "status": r.status
+            } for r in resources
+        ]
+    }
+
+@app.post("/api/volunteer/dispatch/{id}")
+async def dispatch_volunteer(id: int, db: AsyncSession = Depends(get_db)):
+    vol = await db.get(Volunteer, id)
+    if not vol:
+        return {"status": "error", "message": "Volunteer not found"}
+    
+    vol.status = "Dispatched" if vol.status == "Available" else "Available"
+    await db.commit()
+    return {"status": "success", "volunteer_status": vol.status, "id": vol.id}

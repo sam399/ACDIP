@@ -650,3 +650,164 @@ h1, h2, h3, h4, h5, h6 {
 .btn-send-update:hover {
     background-color: var(--brand-red-hover);
 }
+
+/* -------------------------------------------------------------
+ * Module 2 Styling Extensions (Figma Screen 3, 4, 5 Matches)
+ * ------------------------------------------------------------- */
+
+/* Donation Portal cards */
+.donation-banner-red {
+    background-color: #E03C3E;
+    color: white;
+    border-radius: 12px;
+    padding: 2.2rem 1.8rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.donation-banner-blue {
+    background-color: #3F51B5;
+    color: white;
+    border-radius: 12px;
+    padding: 2.2rem 1.8rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-banner-action {
+    color: white;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 1rem;
+    border-bottom: 1.5px solid transparent;
+}
+
+.btn-banner-action:hover {
+    border-bottom-color: white;
+}
+
+.portal-card {
+    background-color: white;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1.25rem 1rem;
+    height: 100%;
+}
+
+.portal-card-tag {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 0.5rem;
+}
+
+.portal-card-tag.critical {
+    background-color: var(--brand-red-light);
+    color: var(--brand-red);
+}
+
+.portal-card-tag.high {
+    background-color: #FFF2CC;
+    color: #B57F1E;
+}
+
+.portal-card-tag.stable {
+    background-color: #E2F0D9;
+    color: #385723;
+}
+
+.portal-card-tag.moderate {
+    background-color: #FCE4D6;
+    color: #C65911;
+}
+
+.portal-card-icon {
+    font-size: 1.5rem;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+/* Volunteer Cards */
+.volunteer-card {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    background-color: white;
+}
+
+.match-score-badge {
+    color: var(--brand-red);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.volunteer-skills-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    background-color: var(--selected-purple-light);
+    color: var(--brand-blue);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.volunteer-skills-badge.boat-owner {
+    background-color: #FFF2CC;
+    color: #B57F1E;
+}
+
+.volunteer-skills-badge.logistics {
+    background-color: #FAF4F2;
+    color: var(--text-dark);
+}
+
+.btn-dispatch {
+    background-color: var(--brand-red);
+    color: white !important;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    padding: 0.4rem 1.1rem;
+    font-size: 0.85rem;
+}
+
+.btn-dispatch:hover {
+    background-color: var(--brand-red-hover);
+}
+
+.btn-dispatch.dispatched {
+    background-color: #6C757D;
+    color: white !important;
+}
+
+/* Fairness Dashboard Map indicators */
+.equity-index-card {
+    border-left: 4px solid var(--brand-red);
+}
+
+.distribution-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    display: inline-block;
+    text-transform: uppercase;
+}
+
+.distribution-badge.verified {
+    background-color: #E2F0D9;
+    color: #385723;
+}
+
+.distribution-badge.duplicate {
+    background-color: #FCE4D6;
+    color: #C65911;
+}

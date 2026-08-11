@@ -85,7 +85,8 @@ class Donation(Base):
     id = Column(Integer, primary_key=True, index=True)
     donor_name = Column(String, nullable=False)  # Name of the individual or NGO
     donor_contact = Column(String, nullable=True)  # Contact details
-    item_name = Column(String, nullable=False)  # e.g., Food, Medicine, Clothes, Water, Blankets
+    item_name = Column(String, nullable=True)  # e.g., Food, Medicine, Clothes, Water, Blankets
+    item_type = Column(String, nullable=True)  # e.g., Food, Medicine, Water
     quantity = Column(Integer, default=1)
     unit = Column(String, nullable=True)  # e.g., kg, units, liters
     location = Column(String, nullable=True)  # Where the donation is available
@@ -96,12 +97,45 @@ class Shelter(Base):
     __tablename__ = "shelters"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)  # Name of the shelter
-    location = Column(String, nullable=False)  # Address or general location
+    location = Column(String, nullable=True)  # Address or general location
     capacity_total = Column(Integer, default=0)  # Total capacity
     capacity_available = Column(Integer, default=0)  # Currently available beds
+    capacity_beds = Column(Integer, default=0)
+    available_beds = Column(Integer, default=0)
+    food_stock_days = Column(Integer, default=0)
     contact_details = Column(String, nullable=True)  # Phone, email, etc.
+    contact_number = Column(String, nullable=True)
     facilities = Column(String, nullable=True)  # Comma-separated list of facilities
     food_stock = Column(String, nullable=True)  # Description of current food stock
     status = Column(String, default="Open")  # Open, Full, Closed
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+class CommunityResource(Base):
+    __tablename__ = "community_resources"
+    id = Column(Integer, primary_key=True, index=True)
+    resource_type = Column(String, nullable=False) # e.g. "Emergency Boat", "Power Generator", "Water Pump", "Solar Station"
+    location = Column(String, nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    status = Column(String, default="Available") # Available, Active, Maintenance
+
+class Volunteer(Base):
+    __tablename__ = "volunteers"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    skills = Column(String, nullable=False) # e.g., "Medical", "Boat Operator", "Logistics", "Rescue"
+    vehicle = Column(String, default="None") # Boat, Truck, Motorcycle, None
+    distance_km = Column(Float, default=0.0)
+    match_score = Column(Integer, default=80) # Matching score percentage
+    status = Column(String, default="Available") # Available, Dispatched, Offline
+
+class ReliefDistribution(Base):
+    __tablename__ = "relief_distributions"
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(DateTime, default=datetime.utcnow)
+    organization = Column(String, nullable=False) # e.g. "Global Aid Network"
+    district = Column(String, nullable=False) # e.g. "Cumilla"
+    resource_type = Column(String, nullable=False) # e.g. "Food Kits", "Med-Packs"
+    resource_quantity = Column(Integer, default=0)
+    beneficiaries_count = Column(Integer, default=0)
+    status = Column(String, default="Verified") # Verified, Duplicate Flag
