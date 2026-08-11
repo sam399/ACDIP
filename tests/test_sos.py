@@ -32,7 +32,7 @@ async def test_sos_form_submission_no_photo():
     
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.post("/sos/submit", data=form_data)
-        
+
     assert response.status_code == 303
     assert "my_requests" in response.cookies
     cookie_val = response.cookies["my_requests"]
@@ -64,7 +64,7 @@ async def test_sos_form_submission_with_photo():
     
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.post("/sos/submit", data=form_data, files=file_payload)
-        
+
     assert response.status_code == 303
     assert "my_requests" in response.cookies
     

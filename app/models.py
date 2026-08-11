@@ -80,30 +80,37 @@ class DamageReport(Base):
     photo_url = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-# --- MODULE 2 MODELS & PLACEHOLDERS ---
-
 class Donation(Base):
-    """Placeholder model for Feature 6 (Groupmate task)"""
     __tablename__ = "donations"
     id = Column(Integer, primary_key=True, index=True)
-    donor_name = Column(String, nullable=False)
-    item_type = Column(String, nullable=False) # e.g., "Food", "Medicine", "Water"
-    quantity = Column(Integer, default=0)
-    status = Column(String, default="Received") # e.g., "Received", "Dispatched"
+    donor_name = Column(String, nullable=False)  # Name of the individual or NGO
+    donor_contact = Column(String, nullable=True)  # Contact details
+    item_name = Column(String, nullable=True)  # e.g., Food, Medicine, Clothes, Water, Blankets
+    item_type = Column(String, nullable=True)  # e.g., Food, Medicine, Water
+    quantity = Column(Integer, default=1)
+    unit = Column(String, nullable=True)  # e.g., kg, units, liters
+    location = Column(String, nullable=True)  # Where the donation is available
+    status = Column(String, default="Available")  # Available, Allocated, Distributed
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class Shelter(Base):
-    """Placeholder model for Feature 9 (Groupmate task)"""
     __tablename__ = "shelters"
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False)  # Name of the shelter
+    location = Column(String, nullable=True)  # Address or general location
+    capacity_total = Column(Integer, default=0)  # Total capacity
+    capacity_available = Column(Integer, default=0)  # Currently available beds
     capacity_beds = Column(Integer, default=0)
     available_beds = Column(Integer, default=0)
     food_stock_days = Column(Integer, default=0)
+    contact_details = Column(String, nullable=True)  # Phone, email, etc.
     contact_number = Column(String, nullable=True)
-
+    facilities = Column(String, nullable=True)  # Comma-separated list of facilities
+    food_stock = Column(String, nullable=True)  # Description of current food stock
+    status = Column(String, default="Open")  # Open, Full, Closed
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 class CommunityResource(Base):
-    """Resource mapping model for Feature 7"""
     __tablename__ = "community_resources"
     id = Column(Integer, primary_key=True, index=True)
     resource_type = Column(String, nullable=False) # e.g. "Emergency Boat", "Power Generator", "Water Pump", "Solar Station"
@@ -113,7 +120,6 @@ class CommunityResource(Base):
     status = Column(String, default="Available") # Available, Active, Maintenance
 
 class Volunteer(Base):
-    """Volunteer list & match model for Feature 8"""
     __tablename__ = "volunteers"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
@@ -124,7 +130,6 @@ class Volunteer(Base):
     status = Column(String, default="Available") # Available, Dispatched, Offline
 
 class ReliefDistribution(Base):
-    """Distribution logs model for Feature 10 & 11"""
     __tablename__ = "relief_distributions"
     id = Column(Integer, primary_key=True, index=True)
     date = Column(DateTime, default=datetime.utcnow)

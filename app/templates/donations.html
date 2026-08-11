@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-md-8">
+            <h2 class="mb-4">Donation Management</h2>
+
+            <!-- Submit Donation Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-plus-circle-fill"></i> Submit New Donation</h5>
+                </div>
+                <div class="card-body">
+                    <form hx-post="/donations/submit" hx-target="#donation-list" hx-swap="afterbegin">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="donor_name" class="form-label fw-bold">Donor Name *</label>
+                                <input type="text" class="form-control" id="donor_name" name="donor_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="donor_contact" class="form-label fw-bold">Contact Details</label>
+                                <input type="text" class="form-control" id="donor_contact" name="donor_contact">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-4">
+                                <label for="item_name" class="form-label fw-bold">Item *</label>
+                                <select class="form-select" id="item_name" name="item_name" required>
+                                    <option value="">Select Item</option>
+                                    <option value="Food">Food</option>
+                                    <option value="Medicine">Medicine</option>
+                                    <option value="Clothes">Clothes</option>
+                                    <option value="Water">Water</option>
+                                    <option value="Blankets">Blankets</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="quantity" class="form-label fw-bold">Quantity *</label>
+                                <input type="number" class="form-control" id="quantity" name="quantity" min="1" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="unit" class="form-label fw-bold">Unit</label>
+                                <input type="text" class="form-control" id="unit" name="unit" placeholder="e.g., kg, units">
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label for="location" class="form-label fw-bold">Location</label>
+                            <input type="text" class="form-control" id="location" name="location">
+                        </div>
+                        <button type="submit" class="btn btn-deploy-response mt-3 w-100" onclick="this.classList.add('is-loading'); this.disabled=true; this.innerHTML='<i class=\'bi bi-arrow-clockwise\'></i><span>Processing...</span>'">Submit Donation</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Current Donations List -->
+            <h3 class="mb-3">Current Donations</h3>
+            <div id="donation-list">
+                {% for donation in donations %}
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title mb-1">{{ donation.item_name }}</h5>
+                                <p class="card-text text-muted mb-1">{{ donation.quantity }} {{ donation.unit }}</p>
+                                <p class="card-text mb-0">Donor: {{ donation.donor_name }}</p>
+                                <small class="text-muted">Location: {{ donation.location or 'N/A' }}</small>
+                            </div>
+                            <div>
+                                <span class="badge bg-info">{{ donation.status }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            {% include 'components/sidebar.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}
