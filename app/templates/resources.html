@@ -17,7 +17,7 @@
                 <div class="donation-banner-red shadow-sm">
                     <h3 class="fw-bold mb-2">Donate Resources for Bangladesh</h3>
                     <p class="mb-0 small opacity-90" style="max-width: 320px;">Contribute essential supplies directly to active field operations and NGO distribution hubs.</p>
-                    <a href="#" class="btn-banner-action">
+                    <a href="#" class="btn-banner-action" data-bs-toggle="modal" data-bs-target="#donationModal" onclick="setDonationCategory('Food')">
                         <span>Get Started</span> <i class="bi bi-arrow-right"></i>
                     </a>
                 </div>
@@ -28,7 +28,7 @@
                 <div class="donation-banner-blue shadow-sm">
                     <h3 class="fw-bold mb-2">Request Resources</h3>
                     <p class="mb-0 small opacity-90" style="max-width: 320px;">Secure life-saving equipment and supplies for your community or NGO mission.</p>
-                    <a href="#" class="btn-banner-action">
+                    <a href="#" class="btn-banner-action" onclick="alert('Submit request features coming soon.')">
                         <span>Submit Request</span> <i class="bi bi-arrow-right"></i>
                     </a>
                 </div>
@@ -39,15 +39,15 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <h5 class="fw-bold mb-0">Donation Portal</h5>
-                <p class="text-muted small mb-0">Urgent needs prioritized by real-time field data.</p>
+                <p class="text-muted small mb-0">Urgent needs prioritized by real-time field data. Click any card to donate.</p>
             </div>
-            <a href="#" class="small fw-semibold text-danger text-decoration-none">View All Categories <i class="bi bi-box-arrow-up-right"></i></a>
+            <a href="#" class="small fw-semibold text-danger text-decoration-none" data-bs-toggle="modal" data-bs-target="#donationModal">View All Categories <i class="bi bi-box-arrow-up-right"></i></a>
         </div>
 
         <!-- 5 Needs Categories Cards Grid -->
-        <div class="row g-3 mb-5">
+        <div class="row row-cols-2 row-cols-md-5 g-3 mb-5">
             <!-- Food -->
-            <div class="col">
+            <div class="col" style="cursor: pointer;" onclick="openDonationModal('Food')">
                 <div class="portal-card">
                     <div class="portal-card-icon"><i class="bi bi-egg-fried"></i></div>
                     <h6 class="fw-bold mb-1">Food</h6>
@@ -55,7 +55,7 @@
                 </div>
             </div>
             <!-- Medicine -->
-            <div class="col">
+            <div class="col" style="cursor: pointer;" onclick="openDonationModal('Medicine')">
                 <div class="portal-card">
                     <div class="portal-card-icon"><i class="bi bi-capsule"></i></div>
                     <h6 class="fw-bold mb-1">Medicine</h6>
@@ -63,7 +63,7 @@
                 </div>
             </div>
             <!-- Clothes -->
-            <div class="col">
+            <div class="col" style="cursor: pointer;" onclick="openDonationModal('Clothes')">
                 <div class="portal-card">
                     <div class="portal-card-icon"><i class="bi bi-tags"></i></div>
                     <h6 class="fw-bold mb-1">Clothes</h6>
@@ -71,7 +71,7 @@
                 </div>
             </div>
             <!-- Water -->
-            <div class="col">
+            <div class="col" style="cursor: pointer;" onclick="openDonationModal('Water')">
                 <div class="portal-card">
                     <div class="portal-card-icon"><i class="bi bi-droplet"></i></div>
                     <h6 class="fw-bold mb-1">Water</h6>
@@ -79,7 +79,7 @@
                 </div>
             </div>
             <!-- Blankets -->
-            <div class="col">
+            <div class="col" style="cursor: pointer;" onclick="openDonationModal('Blankets')">
                 <div class="portal-card">
                     <div class="portal-card-icon"><i class="bi bi-door-open"></i></div>
                     <h6 class="fw-bold mb-1">Blankets</h6>
@@ -170,21 +170,80 @@
 
     </div>
 </div>
+
+<!-- DONATION SUBMISSION MODAL -->
+<div class="modal fade" id="donationModal" tabindex="-1" aria-labelledby="donationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="donationModalLabel">
+                    <i class="bi bi-heart-fill text-danger me-1"></i> Contribute Donation
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="/resources/donate" method="post">
+                <div class="modal-body py-3">
+                    <div class="mb-3">
+                        <label for="donorName" class="form-label small fw-bold text-muted">Donor Name / NGO *</label>
+                        <input type="text" class="form-control bg-light border-0" id="donorName" name="donor_name" required placeholder="Your name or organization (e.g. Red Cross)">
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label for="donationCategory" class="form-label small fw-bold text-muted">Category *</label>
+                            <select class="form-select bg-light border-0" id="donationCategory" name="item_type" required>
+                                <option value="Food">Food</option>
+                                <option value="Medicine">Medicine</option>
+                                <option value="Water">Water</option>
+                                <option value="Clothes">Clothes</option>
+                                <option value="Blankets">Blankets</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label for="donationQty" class="form-label small fw-bold text-muted">Quantity *</label>
+                            <input type="number" class="form-control bg-light border-0" id="donationQty" name="quantity" required min="1" placeholder="e.g. 100">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal" style="border-radius: 6px;">Cancel</button>
+                    <button type="submit" class="btn btn-danger fw-bold border-0" style="background-color: var(--brand-red); border-radius: 6px;">Contribute Now</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+    // Set category pre-selection inside dynamic modals
+    function setDonationCategory(category) {
+        var dropdown = document.getElementById('donationCategory');
+        if (dropdown) {
+            dropdown.value = category;
+        }
+    }
+
+    function openDonationModal(category) {
+        setDonationCategory(category);
+        var myModal = new bootstrap.Modal(document.getElementById('donationModal'));
+        myModal.show();
+    }
+
     // Initialize map
     var map = L.map('resourceMap', {
         zoomControl: true,
         scrollWheelZoom: false
-    }).setView([22.5, 90.5], 7); // Center around Coastal Bangladesh
+    }).setView([22.5, 90.5], 7);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 20
     }).addTo(map);
 
-    // Fetch active community resources
+    // Fetch active resources
     fetch('/api/resources')
         .then(response => response.json())
         .then(data => {

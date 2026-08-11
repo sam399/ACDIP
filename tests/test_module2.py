@@ -55,24 +55,32 @@ async def test_resources_api():
 async def test_volunteer_dispatch_api():
     transport = ASGITransport(app=app)
     
-    # Toggle volunteer 1 status to dispatched
+    # 1. Fetch current status from database to support dynamic/dirty test environments
+    async with SessionLocal() as db:
+        res = await db.execute(select(Volunteer).where(Volunteer.id == 1))
+        vol = res.scalars().first()
+        initial_status = vol.status if vol else "Available"
+        
+    expected_status = "Dispatched" if initial_status == "Available" else "Available"
+    
+    # Toggle volunteer 1 status
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.post("/api/volunteer/dispatch/1")
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "success"
-    assert data["volunteer_status"] == "Dispatched"
+    assert data["volunteer_status"] == expected_status
     
     # Verify in database
     async with SessionLocal() as db:
         res = await db.execute(select(Volunteer).where(Volunteer.id == 1))
         vol = res.scalars().first()
         assert vol is not None
-        assert vol.status == "Dispatched"
+        assert vol.status == expected_status
         
-    # Toggle back to available
+    # Toggle back to initial status
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response_back = await ac.post("/api/volunteer/dispatch/1")
     assert response_back.status_code == 200
     data_back = response_back.json()
-    assert data_back["volunteer_status"] == "Available"
+    assert data_back["volunteer_status"] == initial_status

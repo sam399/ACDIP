@@ -378,6 +378,49 @@ async def get_resources(request: Request, db: AsyncSession = Depends(get_db)):
         }
     )
 
+@app.post("/resources/donate", response_class=RedirectResponse)
+async def submit_donation(
+    donor_name: str = Form(...),
+    item_type: str = Form(...), # Food, Medicine, Clothes, Water, Blankets
+    quantity: int = Form(...),
+    db: AsyncSession = Depends(get_db)
+):
+    # 1. Save Donation Record
+    new_donation = Donation(
+        donor_name=donor_name,
+        item_type=item_type,
+        quantity=quantity,
+        status="Received",
+        created_at=datetime.utcnow()
+    )
+    db.add(new_donation)
+    
+    # 2. Dynamically update SupplyInventory counters
+    inventory_mapping = {
+        "Medicine": "Medical Kits",
+        "Water": "Drinking Water",
+        "Food": "Emergency Meals"
+    }
+    
+    if item_type in inventory_mapping:
+        inv_name = inventory_mapping[item_type]
+        result = await db.execute(select(SupplyInventory).where(SupplyInventory.item_name == inv_name))
+        inv = result.scalars().first()
+        if inv:
+            inv.quantity += quantity
+        else:
+            # Fallback insertion
+            new_inv = SupplyInventory(
+                item_name=inv_name,
+                quantity=quantity,
+                unit="L" if item_type == "Water" else "kits" if item_type == "Medicine" else "meals",
+                critical_threshold=500
+            )
+            db.add(new_inv)
+            
+    await db.commit()
+    return RedirectResponse(url="/resources", status_code=303)
+
 @app.get("/shelters", response_class=HTMLResponse)
 async def get_shelters(request: Request, db: AsyncSession = Depends(get_db)):
     vol_query = await db.execute(select(Volunteer).order_by(Volunteer.match_score.desc()))
