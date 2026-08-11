@@ -1,0 +1,25 @@
+<div class="card mb-2">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h5 class="card-title mb-1">{{ shelter.name }}</h5>
+                <p class="card-text text-muted mb-1">Location: {{ shelter.location }}</p>
+                <p class="card-text mb-1">Capacity: <strong>{{ shelter.capacity_available }}</strong> / {{ shelter.capacity_total }} beds available</p>
+                <p class="card-text mb-1">Facilities: {{ shelter.facilities or 'N/A' }}</p>
+                <p class="card-text mb-0">Food Stock: {{ shelter.food_stock or 'N/A' }}</p>
+                <small class="text-muted">Contact: {{ shelter.contact_details or 'N/A' }}</small>
+            </div>
+            <div class="text-end">
+                <span class="badge {% if shelter.status == 'Open' %}bg-success{% elif shelter.status == 'Full' %}bg-danger{% else %}bg-secondary{% endif %}">{{ shelter.status }}</span>
+            </div>
+        </div>
+        <form hx-post="/shelters/update" hx-target="closest .card" class="mt-2">
+            <input type="hidden" name="shelter_id" value="{{ shelter.id }}">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">Beds</span>
+                <input type="number" class="form-control" name="capacity_available" value="{{ shelter.capacity_available }}" min="0" max="{{ shelter.capacity_total }}">
+                <button class="btn btn-outline-primary" type="submit">Update</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -21,7 +21,7 @@ async def test_submit_missing_person_report():
     
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.post("/missing/report", data=form_data)
-        
+
     assert response.status_code == 303
     
     # Verify database entry
@@ -46,7 +46,7 @@ async def test_submit_found_person_report():
     
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.post("/missing/report", data=form_data)
-        
+
     assert response.status_code == 303
     
     # Verify database entry

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-md-8">
+            <h2 class="mb-4">Shelter Management</h2>
+
+            <!-- Register Shelter Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header" style="background-color: #7c8bfc; color: white;">
+                    <h5 class="mb-0"><i class="bi bi-house-door"></i> Register New Shelter</h5>
+                </div>
+                <div class="card-body">
+                    <form hx-post="/shelters/submit" hx-target="#shelter-list" hx-swap="afterbegin">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label fw-bold">Shelter Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="location" class="form-label fw-bold">Location *</label>
+                                <input type="text" class="form-control" id="location" name="location" required>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-4">
+                                <label for="capacity_total" class="form-label fw-bold">Total Capacity *</label>
+                                <input type="number" class="form-control" id="capacity_total" name="capacity_total" min="1" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="capacity_available" class="form-label fw-bold">Available Beds *</label>
+                                <input type="number" class="form-control" id="capacity_available" name="capacity_available" min="0" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="contact_details" class="form-label fw-bold">Contact Details</label>
+                                <input type="text" class="form-control" id="contact_details" name="contact_details">
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <label for="facilities" class="form-label fw-bold">Facilities (comma separated)</label>
+                            <input type="text" class="form-control" id="facilities" name="facilities" placeholder="e.g., Kitchen, Restrooms, Medical Aid">
+                        </div>
+                        <div class="mt-2">
+                            <label for="food_stock" class="form-label fw-bold">Food Stock</label>
+                            <input type="text" class="form-control" id="food_stock" name="food_stock" placeholder="e.g., Rice, Lentils, Milk">
+                        </div>
+                        <div class="mt-3">
+                            <label for="status" class="form-label fw-bold">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="Open">Open</option>
+                                <option value="Full">Full</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-deploy-response mt-3 w-100" hx-on:beforeRequest="this.disabled=true; this.classList.remove('btn-success'); this.innerHTML='<i class=\'bi bi-arrow-clockwise\'></i><span>Processing...</span>'" hx-on:afterRequest="this.disabled=false; this.classList.remove('btn-deploy-response'); this.classList.add('btn-success'); this.innerHTML='<i class=\'bi bi-check-circle-fill\'></i><span>Registered</span>'">Register Shelter</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Current Shelters List -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">Current Shelters</h3>
+                <form class="d-flex gap-2" method="get" action="/shelters">
+                    <input type="text" class="form-control form-control-sm" name="search" value="{{ search }}" placeholder="Search shelters">
+                    <button type="submit" class="btn btn-outline-primary btn-sm">Search</button>
+                </form>
+            </div>
+            <div id="shelter-list">
+                {% if shelters %}
+                    {% for shelter in shelters %}
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="card-title mb-1">{{ shelter.name }}</h5>
+                                    <p class="card-text text-muted mb-1">Location: {{ shelter.location }}</p>
+                                    <p class="card-text mb-1">Capacity: <strong>{{ shelter.capacity_available }}</strong> / {{ shelter.capacity_total }} beds available</p>
+                                    <p class="card-text mb-1">Facilities: {{ shelter.facilities or 'N/A' }}</p>
+                                    <p class="card-text mb-0">Food Stock: {{ shelter.food_stock or 'N/A' }}</p>
+                                    <small class="text-muted">Contact: {{ shelter.contact_details or 'N/A' }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge {% if shelter.status == 'Open' %}bg-success{% elif shelter.status == 'Full' %}bg-danger{% else %}bg-secondary{% endif %}">{{ shelter.status }}</span>
+                                </div>
+                            </div>
+                            <!-- Form to update available capacity -->
+                            <form hx-post="/shelters/update" hx-target="closest .card" hx-swap="outerHTML" class="mt-2">
+                                <input type="hidden" name="shelter_id" value="{{ shelter.id }}">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Beds</span>
+                                    <input type="number" class="form-control" name="capacity_available" value="{{ shelter.capacity_available }}" min="0" max="{{ shelter.capacity_total }}">
+                                    <button class="btn btn-outline-primary" type="submit">Update</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-light border text-muted mb-0">No shelters have been added yet.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            {% include 'components/sidebar.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}

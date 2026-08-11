@@ -79,3 +79,29 @@ class DamageReport(Base):
     status = Column(String, default="Reported")   # Reported, Verified, Resolved
     photo_url = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class Donation(Base):
+    __tablename__ = "donations"
+    id = Column(Integer, primary_key=True, index=True)
+    donor_name = Column(String, nullable=False)  # Name of the individual or NGO
+    donor_contact = Column(String, nullable=True)  # Contact details
+    item_name = Column(String, nullable=False)  # e.g., Food, Medicine, Clothes, Water, Blankets
+    quantity = Column(Integer, default=1)
+    unit = Column(String, nullable=True)  # e.g., kg, units, liters
+    location = Column(String, nullable=True)  # Where the donation is available
+    status = Column(String, default="Available")  # Available, Allocated, Distributed
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class Shelter(Base):
+    __tablename__ = "shelters"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)  # Name of the shelter
+    location = Column(String, nullable=False)  # Address or general location
+    capacity_total = Column(Integer, default=0)  # Total capacity
+    capacity_available = Column(Integer, default=0)  # Currently available beds
+    contact_details = Column(String, nullable=True)  # Phone, email, etc.
+    facilities = Column(String, nullable=True)  # Comma-separated list of facilities
+    food_stock = Column(String, nullable=True)  # Description of current food stock
+    status = Column(String, default="Open")  # Open, Full, Closed
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
