@@ -6,13 +6,13 @@
         
         <ul class="sidebar-menu">
             <li>
-                <a href="/" class="sidebar-menu-item active">
+                <a href="/" class="sidebar-menu-item {% if current_tab == 'dashboard' %}active{% endif %}">
                     <i class="bi bi-asterisk"></i>
                     <span>Incident Control</span>
                 </a>
             </li>
             <li>
-                <a href="/resources" class="sidebar-menu-item">
+                <a href="/resources" class="sidebar-menu-item {% if current_tab == 'resources' %}active{% endif %}">
                     <i class="bi bi-map"></i>
                     <span>Resource Map</span>
                 </a>
@@ -24,13 +24,13 @@
                 </a>
             </li>
             <li>
-                <a href="/shelters" class="sidebar-menu-item">
+                <a href="/shelters" class="sidebar-menu-item {% if current_tab == 'shelters' %}active{% endif %}">
                     <i class="bi bi-people"></i>
                     <span>Volunteer Hub</span>
                 </a>
             </li>
             <li>
-                <a href="/tracking" class="sidebar-menu-item">
+                <a href="/tracking" class="sidebar-menu-item {% if current_tab == 'tracking' %}active{% endif %}">
                     <i class="bi bi-truck"></i>
                     <span>Distribution Tracker</span>
                 </a>
@@ -45,7 +45,7 @@
     </div>
     
     <div>
-        <button class="btn btn-deploy-response mb-3">
+        <button class="btn btn-deploy-response mb-3" onclick="alert('Deploying emergency response dispatch units.')">
             <i class="bi bi-rocket-takeoff-fill"></i>
             <span>DEPLOY RESPONSE</span>
         </button>

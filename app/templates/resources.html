@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- LEFT SIDEBAR -->
+    <div class="col-lg-3 col-md-4">
+        {% include 'components/sidebar.html' %}
+    </div>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="col-lg-9 col-md-8">
+        
+        <!-- TOP BANNERS ROW -->
+        <div class="row g-4 mb-4">
+            <!-- Donate Banner -->
+            <div class="col-md-6">
+                <div class="donation-banner-red shadow-sm">
+                    <h3 class="fw-bold mb-2">Donate Resources for Bangladesh</h3>
+                    <p class="mb-0 small opacity-90" style="max-width: 320px;">Contribute essential supplies directly to active field operations and NGO distribution hubs.</p>
+                    <a href="#" class="btn-banner-action">
+                        <span>Get Started</span> <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Request Banner -->
+            <div class="col-md-6">
+                <div class="donation-banner-blue shadow-sm">
+                    <h3 class="fw-bold mb-2">Request Resources</h3>
+                    <p class="mb-0 small opacity-90" style="max-width: 320px;">Secure life-saving equipment and supplies for your community or NGO mission.</p>
+                    <a href="#" class="btn-banner-action">
+                        <span>Submit Request</span> <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- DONATION PORTAL NEED OVERVIEW -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="fw-bold mb-0">Donation Portal</h5>
+                <p class="text-muted small mb-0">Urgent needs prioritized by real-time field data.</p>
+            </div>
+            <a href="#" class="small fw-semibold text-danger text-decoration-none">View All Categories <i class="bi bi-box-arrow-up-right"></i></a>
+        </div>
+
+        <!-- 5 Needs Categories Cards Grid -->
+        <div class="row g-3 mb-5">
+            <!-- Food -->
+            <div class="col">
+                <div class="portal-card">
+                    <div class="portal-card-icon"><i class="bi bi-egg-fried"></i></div>
+                    <h6 class="fw-bold mb-1">Food</h6>
+                    <span class="portal-card-tag critical">Critical Need</span>
+                </div>
+            </div>
+            <!-- Medicine -->
+            <div class="col">
+                <div class="portal-card">
+                    <div class="portal-card-icon"><i class="bi bi-capsule"></i></div>
+                    <h6 class="fw-bold mb-1">Medicine</h6>
+                    <span class="portal-card-tag high">High Demand</span>
+                </div>
+            </div>
+            <!-- Clothes -->
+            <div class="col">
+                <div class="portal-card">
+                    <div class="portal-card-icon"><i class="bi bi-tags"></i></div>
+                    <h6 class="fw-bold mb-1">Clothes</h6>
+                    <span class="portal-card-tag stable">Stable</span>
+                </div>
+            </div>
+            <!-- Water -->
+            <div class="col">
+                <div class="portal-card">
+                    <div class="portal-card-icon"><i class="bi bi-droplet"></i></div>
+                    <h6 class="fw-bold mb-1">Water</h6>
+                    <span class="portal-card-tag critical">Critical Need</span>
+                </div>
+            </div>
+            <!-- Blankets -->
+            <div class="col">
+                <div class="portal-card">
+                    <div class="portal-card-icon"><i class="bi bi-door-open"></i></div>
+                    <h6 class="fw-bold mb-1">Blankets</h6>
+                    <span class="portal-card-tag moderate">Moderate</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- COMMUNITY RESOURCE MAP & NGO INVENTORY -->
+        <div class="row g-4">
+            <!-- Left: Leaflet Resource Map -->
+            <div class="col-lg-8">
+                <div class="rc-card h-100 p-0 overflow-hidden position-relative" style="min-height: 450px;">
+                    <div class="p-3 bg-white border-bottom position-absolute top-0 start-0 end-0" style="z-index: 1000;">
+                        <h6 class="fw-bold mb-0">Community Resource Map</h6>
+                    </div>
+                    
+                    <div id="resourceMap" class="w-100 h-100" style="min-height: 450px; z-index: 1;"></div>
+                    
+                    <!-- Sidebar Map Legend Overlay -->
+                    <div class="position-absolute bottom-3 start-3 bg-white p-3 rounded-3 shadow-sm border" style="z-index: 1000; bottom: 20px; left: 20px; min-width: 200px;">
+                        <h6 class="small fw-bold text-muted mb-2 text-uppercase">Active Resources</h6>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-1 small">
+                            <span><i class="bi bi-tsunami text-danger me-1"></i> Emergency Boats</span>
+                            <span class="fw-bold">{{ counts.boats }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-1 small">
+                            <span><i class="bi bi-lightning-fill text-warning me-1"></i> Power Generators</span>
+                            <span class="fw-bold">{{ counts.generators }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-1 small">
+                            <span><i class="bi bi-house-heart text-danger me-1"></i> Relief Kitchens</span>
+                            <span class="fw-bold">{{ counts.kitchens }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center small">
+                            <span><i class="bi bi-droplet-fill text-primary me-1"></i> Water Pumps</span>
+                            <span class="fw-bold">{{ counts.pumps }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: NGO Inventory Grid -->
+            <div class="col-lg-4">
+                <div class="rc-card h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <h5 class="fw-bold mb-3">NGO Inventory</h5>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-sm table-borderless align-middle mb-0">
+                                <thead>
+                                    <tr class="border-bottom text-muted small" style="font-size: 0.75rem;">
+                                        <th class="pb-2">ITEM & SKU</th>
+                                        <th class="pb-2 text-end">STOCK LEVEL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in inventory_items %}
+                                    <tr class="border-bottom">
+                                        <td class="py-3">
+                                            <div class="fw-bold" style="font-size: 0.9rem;">{{ item.item }}</div>
+                                            <div class="text-muted small" style="font-size: 0.75rem;">{{ item.location }}</div>
+                                        </td>
+                                        <td class="py-3 text-end">
+                                            <div class="fw-bold" style="font-size: 0.95rem;">{{ item.stock }}</div>
+                                            {% if '+' in item.trend %}
+                                            <div class="text-success small font-monospace" style="font-size: 0.75rem;"><i class="bi bi-arrow-up-right"></i> {{ item.trend }}</div>
+                                            {% elif '-' in item.trend %}
+                                            <div class="text-danger small font-monospace" style="font-size: 0.75rem;"><i class="bi bi-arrow-down-right"></i> {{ item.trend }}</div>
+                                            {% else %}
+                                            <div class="text-muted small font-monospace" style="font-size: 0.75rem;">--</div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-outline-danger w-100 fw-bold py-2 mt-3" style="font-size: 0.85rem;" onclick="alert('Downloading inventory report...')">
+                        Download Full Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize map
+    var map = L.map('resourceMap', {
+        zoomControl: true,
+        scrollWheelZoom: false
+    }).setView([22.5, 90.5], 7); // Center around Coastal Bangladesh
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 20
+    }).addTo(map);
+
+    // Fetch active community resources
+    fetch('/api/resources')
+        .then(response => response.json())
+        .then(data => {
+            if (data.resources) {
+                data.resources.forEach(function(r) {
+                    var latlng = [r.latitude, r.longitude];
+                    var marker = L.circleMarker(latlng, {
+                        color: r.status === 'Available' ? '#198754' : '#6c757d',
+                        fillColor: r.status === 'Available' ? '#198754' : '#6c757d',
+                        fillOpacity: 0.8,
+                        radius: 8
+                    }).addTo(map);
+                    
+                    marker.bindPopup(
+                        "<b>" + r.type + "</b><br>" + 
+                        "Location: " + r.location + "<br>" + 
+                        "Status: <b>" + r.status + "</b>"
+                    );
+                });
+            }
+        })
+        .catch(err => console.error("Error loading resources: ", err));
+</script>
+{% endblock %}

@@ -79,3 +79,58 @@ class DamageReport(Base):
     status = Column(String, default="Reported")   # Reported, Verified, Resolved
     photo_url = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+# --- MODULE 2 MODELS & PLACEHOLDERS ---
+
+class Donation(Base):
+    """Placeholder model for Feature 6 (Groupmate task)"""
+    __tablename__ = "donations"
+    id = Column(Integer, primary_key=True, index=True)
+    donor_name = Column(String, nullable=False)
+    item_type = Column(String, nullable=False) # e.g., "Food", "Medicine", "Water"
+    quantity = Column(Integer, default=0)
+    status = Column(String, default="Received") # e.g., "Received", "Dispatched"
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class Shelter(Base):
+    """Placeholder model for Feature 9 (Groupmate task)"""
+    __tablename__ = "shelters"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    capacity_beds = Column(Integer, default=0)
+    available_beds = Column(Integer, default=0)
+    food_stock_days = Column(Integer, default=0)
+    contact_number = Column(String, nullable=True)
+
+class CommunityResource(Base):
+    """Resource mapping model for Feature 7"""
+    __tablename__ = "community_resources"
+    id = Column(Integer, primary_key=True, index=True)
+    resource_type = Column(String, nullable=False) # e.g. "Emergency Boat", "Power Generator", "Water Pump", "Solar Station"
+    location = Column(String, nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    status = Column(String, default="Available") # Available, Active, Maintenance
+
+class Volunteer(Base):
+    """Volunteer list & match model for Feature 8"""
+    __tablename__ = "volunteers"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    skills = Column(String, nullable=False) # e.g., "Medical", "Boat Operator", "Logistics", "Rescue"
+    vehicle = Column(String, default="None") # Boat, Truck, Motorcycle, None
+    distance_km = Column(Float, default=0.0)
+    match_score = Column(Integer, default=80) # Matching score percentage
+    status = Column(String, default="Available") # Available, Dispatched, Offline
+
+class ReliefDistribution(Base):
+    """Distribution logs model for Feature 10 & 11"""
+    __tablename__ = "relief_distributions"
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(DateTime, default=datetime.utcnow)
+    organization = Column(String, nullable=False) # e.g. "Global Aid Network"
+    district = Column(String, nullable=False) # e.g. "Cumilla"
+    resource_type = Column(String, nullable=False) # e.g. "Food Kits", "Med-Packs"
+    resource_quantity = Column(Integer, default=0)
+    beneficiaries_count = Column(Integer, default=0)
+    status = Column(String, default="Verified") # Verified, Duplicate Flag
