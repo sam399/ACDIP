@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import inspect, select, text
 from app.database import engine, Base, get_db, SessionLocal
 from app.models import (
     Disaster, EmergencyRequest, SupplyInventory, PersonnelStatus, 
@@ -57,11 +57,68 @@ def render_shelter_card(shelter: Shelter) -> str:
     """
 
 
+def render_donation_card(donation: Donation) -> str:
+	return f"""
+	<div class=\"card mb-2\">
+	    <div class=\"card-body\">
+	        <div class=\"d-flex justify-content-between align-items-center\">
+	            <div>
+	                <h5 class=\"card-title mb-1\">{donation.item_name or donation.item_type or 'Donation'}</h5>
+	                <p class=\"card-text text-muted mb-1\">{donation.quantity} {donation.unit or ''}</p>
+	                <p class=\"card-text mb-0\">Donor: {donation.donor_name}</p>
+	                <small class=\"text-muted\">Location: {donation.location or 'N/A'}</small>
+	            </div>
+	            <div>
+	                <span class=\"badge bg-info\">{donation.status}</span>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+	"""
+
+
+def _sqlite_literal(value):
+	if value is None:
+		return "NULL"
+	if isinstance(value, str):
+		return "'" + value.replace("'", "''") + "'"
+	return str(value)
+
+
+def _ensure_sqlite_schema(sync_conn):
+	inspector = inspect(sync_conn)
+	existing_tables = set(inspector.get_table_names())
+
+	for table in Base.metadata.sorted_tables:
+		if table.name not in existing_tables:
+			continue
+
+		existing_columns = {column["name"] for column in inspector.get_columns(table.name)}
+		for column in table.columns:
+			if column.name in existing_columns:
+				continue
+
+			column_type = column.type.compile(dialect=sync_conn.dialect)
+			ddl = f'ALTER TABLE "{table.name}" ADD COLUMN "{column.name}" {column_type}'
+
+			default_value = None
+			if column.server_default is not None:
+				default_value = column.server_default.arg
+			elif column.default is not None and not callable(column.default.arg):
+				default_value = column.default.arg
+
+			if default_value is not None:
+				ddl += f" DEFAULT {_sqlite_literal(default_value)}"
+
+			sync_conn.execute(text(ddl))
+
+
 @app.on_event("startup")
 async def startup():
 	# Automatically create tables in local SQLite development
 	async with engine.begin() as conn:
 		await conn.run_sync(Base.metadata.create_all)
+		await conn.run_sync(_ensure_sqlite_schema)
 
 # --- BACKGROUND AI TRIAGE TASK ---
 async def run_ai_triage(request_id: int):
@@ -377,8 +434,18 @@ async def add_family_update(
 	return RedirectResponse(url="/missing", status_code=303)
 
 @app.get("/donations", response_class=HTMLResponse)
-async def get_donations(request: Request, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Donation))
+async def get_donations(request: Request, db: AsyncSession = Depends(get_db), search: str | None = None):
+    query = select(Donation)
+    if search:
+        search_term = f"%{search.strip()}%"
+        query = query.where(
+            (Donation.donor_name.ilike(search_term)) |
+            (Donation.item_name.ilike(search_term)) |
+            (Donation.location.ilike(search_term)) |
+            (Donation.status.ilike(search_term))
+        )
+
+    result = await db.execute(query.order_by(Donation.created_at.desc()))
     donations = result.scalars().all()
     
     return templates.TemplateResponse(
@@ -386,12 +453,14 @@ async def get_donations(request: Request, db: AsyncSession = Depends(get_db)):
         name="donations.html",
         context={
             "donations": donations,
-            "current_tab": "resources"
+            "current_tab": "resources",
+            "search": search or ""
         }
     )
 
-@app.post("/donations/submit", response_class=RedirectResponse)
+@app.post("/donations/submit", response_class=HTMLResponse)
 async def submit_donation(
+	request: Request,
     donor_name: str = Form(...),
     donor_contact: str = Form(None),
     item_name: str = Form(...),
@@ -423,6 +492,9 @@ async def submit_donation(
     except Exception:
         # If item doesn't exist in inventory, ignore or log
         pass
+
+    if request.headers.get("hx-request") == "true":
+        return HTMLResponse(content=render_donation_card(new_donation))
 
     return RedirectResponse(url="/donations", status_code=303)
 
@@ -543,6 +615,7 @@ async def submit_donation(
     # 1. Save Donation Record
     new_donation = Donation(
         donor_name=donor_name,
+		item_name=item_type,
         item_type=item_type,
         quantity=quantity,
         status="Received",

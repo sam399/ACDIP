@@ -13,7 +13,7 @@
                     <h5 class="mb-0"><i class="bi bi-plus-circle-fill"></i> Submit New Donation</h5>
                 </div>
                 <div class="card-body">
-                    <form hx-post="/donations/submit" hx-target="#donation-list" hx-swap="afterbegin">
+                    <form hx-post="/donations/submit" hx-target="#donation-list" hx-swap="afterbegin" hx-on::before-request="const button = this.querySelector('button[type=submit]'); button.datasetOriginalHtml = button.datasetOriginalHtml || button.innerHTML; button.classList.add('is-loading'); button.disabled = true; button.innerHTML = '<i class=\'bi bi-arrow-clockwise\'></i><span>Processing...</span>';" hx-on::after-request="const button = this.querySelector('button[type=submit]'); button.classList.remove('is-loading'); button.disabled = false; if (event.detail.successful) { button.classList.remove('btn-deploy-response'); button.classList.add('btn-success'); button.innerHTML = '<i class=\'bi bi-check-circle-fill\'></i><span>Submitted</span>'; this.reset(); setTimeout(() => { button.classList.remove('btn-success'); button.classList.add('btn-deploy-response'); button.innerHTML = button.datasetOriginalHtml || '<i class=\'bi bi-send-fill\'></i><span>Submit Donation</span>'; }, 1400); } else { button.innerHTML = button.datasetOriginalHtml || '<i class=\'bi bi-send-fill\'></i><span>Submit Donation</span>'; }">
                         <div class="row">
                             <div class="col-md-6">
                                 <label for="donor_name" class="form-label fw-bold">Donor Name *</label>
@@ -50,14 +50,21 @@
                             <label for="location" class="form-label fw-bold">Location</label>
                             <input type="text" class="form-control" id="location" name="location">
                         </div>
-                        <button type="submit" class="btn btn-deploy-response mt-3 w-100" onclick="this.classList.add('is-loading'); this.disabled=true; this.innerHTML='<i class=\'bi bi-arrow-clockwise\'></i><span>Processing...</span>'">Submit Donation</button>
+                        <button type="submit" class="btn btn-deploy-response mt-3 w-100">Submit Donation</button>
                     </form>
                 </div>
             </div>
 
             <!-- Current Donations List -->
-            <h3 class="mb-3">Current Donations</h3>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">Current Donations</h3>
+                <form class="d-flex gap-2" method="get" action="/donations">
+                    <input type="text" class="form-control form-control-sm" name="search" value="{{ search }}" placeholder="Search donations">
+                    <button type="submit" class="btn btn-outline-primary btn-sm">Search</button>
+                </form>
+            </div>
             <div id="donation-list">
+                {% if donations %}
                 {% for donation in donations %}
                 <div class="card mb-2">
                     <div class="card-body">
@@ -75,6 +82,9 @@
                     </div>
                 </div>
                 {% endfor %}
+                {% else %}
+                <div class="alert alert-light border text-muted mb-0">No donations have been added yet.</div>
+                {% endif %}
             </div>
         </div>
 
