@@ -12,9 +12,9 @@ RESPOND-ER is an AI-powered disaster response, resource coordination, and commun
 3. **Feature 3: AI Emergency Prioritization** (Gemini API integration that triages citizen requests asynchronously in background threads, featuring a rules-based fallback engine for offline reliability).
 4. **Feature 4: Damage Reporting** (Citizens report public infrastructure damage such as broken roads, flooding, fire hazards, and outages via pop-up modals, rendering dynamic color-coded markers directly onto the Command Center map).
 5. **Feature 5: Missing & Found Person Management** (Filing missing/found reports with photos, filtering directory lists by checkboxes, text-searching records from the global search bar, and posting family updates).
+6. **Feature 6: Donation Management** (Placeholder model implemented; Groupmate task).
 
 ### Module 2: Resource Coordination (In Progress)
-- **Feature 6: Donation Management** (Placeholder model implemented; Groupmate task).
 - **Feature 7: Community Resource Mapping** (Interactive coastal map overlay showing boat locations, water pumps, solar stations, and relief kitchens with active inventory counts).
 - **Feature 8: Smart Volunteer Matching** (AI volunteer database showing matching scores and skill tags, with dynamic click-to-dispatch API updates).
 - **Feature 9: Shelter Management** (Placeholder model implemented; Groupmate task).
