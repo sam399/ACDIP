@@ -1,0 +1,62 @@
+TRANSLATIONS = {
+    "en": {
+        "Incident Control": "Incident Control",
+        "Resource Map": "Resource Map",
+        "NGO Portal": "NGO Portal",
+        "Volunteer Hub": "Volunteer Hub",
+        "Distribution Tracker": "Distribution Tracker",
+        "Recovery Progress": "Recovery Progress",
+        "AI Assistant": "AI Assistant",
+        "Audit Logs": "Audit Logs",
+        "DEPLOY RESPONSE": "DEPLOY RESPONSE",
+        "EMERGENCY CALL": "EMERGENCY CALL",
+        "Settings": "Settings",
+        "Support": "Support",
+        "Active Events": "Active Events",
+        "Affected Districts": "Affected Districts",
+        "Requests": "Requests",
+        "Resources": "Resources",
+        "Weather Alerts": "Weather Alerts",
+        "Dashboard": "Dashboard",
+        "Tracking": "Tracking",
+        "Shelters": "Shelters",
+        "Recovery": "Recovery",
+        "Missing Persons": "Missing Persons",
+        "Donations": "Donations",
+        "Bangladesh Command Center": "Bangladesh Command Center",
+        "Dhaka Operations View": "Dhaka Operations View",
+    },
+    "bn": {
+        "Incident Control": "দুর্যোগ নিয়ন্ত্রণ",
+        "Resource Map": "সম্পদ মানচিত্র",
+        "NGO Portal": "এনজিও পোর্টাল",
+        "Volunteer Hub": "স্বেচ্ছাসেবক হাব",
+        "Distribution Tracker": "ত্রাণ বিতরণ ট্র্যাকার",
+        "Recovery Progress": "পুনরুদ্ধার অগ্রগতি",
+        "AI Assistant": "এআই সহকারী",
+        "Audit Logs": "অডিট লগসমূহ",
+        "DEPLOY RESPONSE": "প্রতিক্রিয়া মোতায়েন করুন",
+        "EMERGENCY CALL": "জরুরী কল",
+        "Settings": "সেটিংস",
+        "Support": "সহায়তা",
+        "Active Events": "সক্রিয় ইভেন্ট",
+        "Affected Districts": "ক্ষতিগ্রস্ত জেলা",
+        "Requests": "অনুরোধ সমূহ",
+        "Resources": "সম্পদ সমূহ",
+        "Weather Alerts": "আবহাওয়া সতর্কতা",
+        "Dashboard": "ড্যাশবোর্ড",
+        "Tracking": "ট্র্যাকিং",
+        "Shelters": "আশ্রয়কেন্দ্রসমূহ",
+        "Recovery": "পুনরুদ্ধার",
+        "Missing Persons": "নিখোঁজ ব্যক্তি তালিকা",
+        "Donations": "অনুদান",
+        "Bangladesh Command Center": "বাংলাদেশ কমান্ড সেন্টার",
+        "Dhaka Operations View": "ঢাকা অপারেশনস ভিউ",
+    }
+}
+
+def get_translation_func(lang: str):
+    translations = TRANSLATIONS.get(lang, TRANSLATIONS["en"])
+    def translate(key: str) -> str:
+        return translations.get(key, key)
+    return translate

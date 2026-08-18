@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.database import verify_database_revision
-from app.routers import dashboard, donations, emergencies, people, recovery, resources, shelters, chatbot
+from app.routers import dashboard, donations, emergencies, people, recovery, resources, shelters, chatbot, settings_support
 from app.web import STATIC_DIR
 
 
@@ -30,6 +30,7 @@ def create_app() -> FastAPI:
     application.include_router(resources.router)
     application.include_router(recovery.router)
     application.include_router(chatbot.router)
+    application.include_router(settings_support.router)
     return application
 
 

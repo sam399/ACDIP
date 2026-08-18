@@ -15,6 +15,7 @@ from app.models.resources import (
     Shelter,
     SupplyInventory,
 )
+from app.models.support import SupportTicket
 
 __all__ = [
     "CommunityResource",
@@ -33,4 +34,5 @@ __all__ = [
     "Shelter",
     "SupplyInventory",
     "Volunteer",
+    "SupportTicket",
 ]

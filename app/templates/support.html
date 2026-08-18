@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-3 col-md-4">{% include 'components/sidebar.html' %}</div>
+    
+    <main class="col-lg-9 col-md-8 py-2">
+        <div class="mb-4">
+            <div class="text-uppercase text-danger fw-bold small">Help & Safety Desk</div>
+            <h2 class="fw-bold mb-1">Support Command Center</h2>
+            <p class="text-muted mb-0">Look up safety guidelines, check systems documentation, or file support requests.</p>
+        </div>
+
+        {% if success %}
+        <div class="alert alert-success d-flex align-items-center gap-2 rounded-3 border-0 shadow-sm mb-4" role="alert">
+            <i class="bi bi-check-circle-fill"></i>
+            <div>Support request submitted successfully! An administrator has been notified.</div>
+        </div>
+        {% endif %}
+
+        <!-- FAQ Accordion section -->
+        <div class="rc-card p-4 bg-white mb-4" style="border-radius: 12px;">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle text-danger me-2"></i>Frequently Asked Questions & Safety Guidelines</h5>
+            
+            <div class="accordion" id="supportAccordion">
+                <!-- FAQ 1 -->
+                <div class="accordion-item border-0 mb-2 shadow-sm rounded-3">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button collapsed fw-semibold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne" style="border-radius: 8px;">
+                            What is the Household Vulnerability Index (HVI) and how is it used?
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#supportAccordion">
+                        <div class="accordion-body small text-muted">
+                            The HVI is a weighted index calculated dynamically from demographic vulnerability inputs. It weighs factors such as pregnant women (+20), disabled members (+20), elderly members (+15), chronic illnesses (+15), and young children (+12). These inputs allow the dispatch pipeline to automatically identify and rank high-risk households in the AI Priority Queue.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 2 -->
+                <div class="accordion-item border-0 mb-2 shadow-sm rounded-3">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed fw-semibold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo" style="border-radius: 8px;">
+                            How is the Community Trust Score calculated?
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#supportAccordion">
+                        <div class="accordion-body small text-muted">
+                            Every citizen emergency SOS report and infrastructure damage report receives a credibility score (0%–100%). It grants +30% for uploaded photo evidence, +30% if multiple similar incidents occur within a 5km radius, +20% if the description contains detailed text (>50 chars), and has a 20% baseline trust value.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 3 -->
+                <div class="accordion-item border-0 shadow-sm rounded-3">
+                    <h2 class="accordion-header" id="headingThree">
+                        <button class="accordion-button collapsed fw-semibold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree" style="border-radius: 8px;">
+                            What are the vital guidelines during active flash floods?
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#supportAccordion">
+                        <div class="accordion-body small text-muted">
+                            1. Disconnect main power lines and gas lines to avoid electrocution or gas leaks.<br>
+                            2. Immediately relocate to elevated areas or nearby tall shelter camps.<br>
+                            3. Never attempt to wade, drive, or swim in fast-moving floodwaters.<br>
+                            4. Consume boiled or filtered water to prevent contamination.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Submit support ticket form -->
+            <div class="col-lg-6">
+                <div class="rc-card p-4 bg-white h-100" style="border-radius: 12px;">
+                    <h5 class="fw-bold text-dark mb-3">Submit Support Request</h5>
+                    <form action="/support/submit" method="post" class="d-flex flex-column gap-3">
+                        <div>
+                            <label class="form-label small fw-semibold">Your Name</label>
+                            <input name="name" class="form-control" placeholder="John Doe" required style="border-radius: 8px;">
+                        </div>
+                        <div>
+                            <label class="form-label small fw-semibold">Email Address</label>
+                            <input name="email" type="email" class="form-control" placeholder="john@example.com" required style="border-radius: 8px;">
+                        </div>
+                        <div>
+                            <label class="form-label small fw-semibold">Subject</label>
+                            <input name="subject" class="form-control" placeholder="Unable to route drone" required style="border-radius: 8px;">
+                        </div>
+                        <div>
+                            <label class="form-label small fw-semibold">Message & Description</label>
+                            <textarea name="message" rows="4" class="form-control" placeholder="Explain the problem in detail..." required style="border-radius: 8px;"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-danger mt-2" style="background-color: var(--brand-red); border-radius: 8px;">Submit Ticket</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- List of tickets -->
+            <div class="col-lg-6">
+                <div class="rc-card p-4 bg-white h-100" style="border-radius: 12px; max-height: 520px; overflow-y: auto;">
+                    <h5 class="fw-bold text-dark mb-3">Recent System Tickets</h5>
+                    <div class="d-flex flex-column gap-3">
+                        {% for ticket in tickets %}
+                        <div class="p-3 border rounded-3 bg-light shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge bg-danger-subtle text-danger" style="font-size: 0.7rem;">{{ ticket.status }}</span>
+                                <span class="text-muted small">{{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                            </div>
+                            <strong class="text-dark d-block mb-1" style="font-size: 0.9rem;">{{ ticket.subject }}</strong>
+                            <p class="text-muted small mb-1">{{ ticket.message }}</p>
+                            <span class="text-secondary small fw-semibold" style="font-size: 0.75rem;"><i class="bi bi-person-fill"></i> {{ ticket.name }} ({{ ticket.email }})</span>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 text-muted small">No active support tickets logged yet.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

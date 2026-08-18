@@ -68,3 +68,66 @@ async def test_predictive_shortage_alerts():
     assert response.status_code == 200
     # The template should render the predictive alerts panel if there are active demands
     assert "AI Predictive Resource Shortage" in response.text
+
+
+@pytest.mark.asyncio
+async def test_language_switcher():
+    transport = ASGITransport(app=app)
+    
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.get("/change-lang/bn", follow_redirects=False)
+    assert response.status_code == 303
+    assert "lang=bn" in response.headers.get("set-cookie", "")
+    
+    cookies = {"lang": "bn"}
+    async with AsyncClient(transport=transport, base_url="http://test", cookies=cookies) as ac:
+        response = await ac.get("/")
+    assert response.status_code == 200
+    # Checks for translated Bangla elements in navbar and metric boxes
+    assert "ড্যাশবোর্ড" in response.text or "সক্রিয় ইভেন্ট" in response.text
+
+
+@pytest.mark.asyncio
+async def test_settings_and_support_endpoints():
+    transport = ASGITransport(app=app)
+    
+    # 1. Verify Settings Page loads
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.get("/settings")
+    assert response.status_code == 200
+    assert "Platform Settings" in response.text
+
+    # 2. Verify Save Settings saves weights
+    settings_data = {
+        "ai_weight": "30",
+        "hvi_weight": "70",
+        "gemini_key": "test_key",
+        "refresh_interval": "5",
+        "dark_mode": "true"
+    }
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.post("/settings/save", data=settings_data, follow_redirects=False)
+    assert response.status_code == 303
+    cookies = response.headers.get("set-cookie", "")
+    assert "ai_weight=30" in cookies
+    assert "hvi_weight=70" in cookies
+    assert "dark_mode=true" in cookies
+
+    # 3. Verify Support Page loads
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.get("/support")
+    assert response.status_code == 200
+    assert "Support Command Center" in response.text
+
+    # 4. Verify support ticket submission
+    ticket_data = {
+        "name": "Test User",
+        "email": "test@example.com",
+        "subject": "Drone Route Issue",
+        "message": "Drone unable to find a clear path to sector 3."
+    }
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.post("/support/submit", data=ticket_data, follow_redirects=False)
+    assert response.status_code == 303
+
+

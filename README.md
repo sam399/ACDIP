@@ -23,8 +23,18 @@ RESPOND-ER is a disaster response, resource coordination, and community recovery
 
 ### Module 3: AI Decision Support
 
+12. AI Disaster Assistant Chatbot with HTMX conversation view and rules-based fallback
+13. Community Trust Score representing data validation based on photo corroboration and geolocation verification
 14. Household Vulnerability Index with auditable scoring, combined AI/HVI ranking, and administrator override history
+15. AI Predictive Resource Shortage (depletion rate estimations and warning alerts)
 16. Recovery Progress Dashboard with disaster baselines, verified milestones, progress percentages, weekly trends, evidence, and public filters
+
+### Utility Portals
+
+- Platform Settings portal for tuning priority triage weights (AI vs HVI) and dark mode preference persistence
+- Support portal featuring dynamic FAQ accordions and sqlite support ticket submissions
+- Interactive Language Changer (English ⇄ বাংলা translations mapped via Jinja context context wrappers)
+- Donations portal in the navbar and public layout
 
 ## Technology
 
@@ -144,6 +154,8 @@ Do not use `alembic stamp` on an unknown or legacy database merely to bypass an 
 - `0003_shelters`: normalizes shelter columns
 - `0004_f14_expand`: adds normalized F14 assessments and priority override history
 - `0005_f16_recovery`: adds recovery baselines and verified recovery milestones
+- `ac5005b05cba`: appends trust score and trust breakdown columns to emergency requests and damage reports
+- `bad524bb968f`: creates support tickets table to record logged support submissions
 
 Legacy F14 columns remain temporarily as a rollback-safe dual-write mirror. Their removal, if desired, must be handled by a later reviewed migration.
 

@@ -811,3 +811,246 @@ h1, h2, h3, h4, h5, h6 {
     background-color: #FCE4D6;
     color: #C65911;
 }
+
+/* -------------------------------------------------------------
+ * Dark Mode Theme Overrides
+ * ------------------------------------------------------------- */
+body.dark-mode {
+    --bg-page: #121212;
+    --bg-card: #1E1E1E;
+    --border-color: #2D2D2D;
+    --text-dark: #F5F5F5;
+    --text-muted: #B0B0B0;
+
+    /* Bootstrap 5 Theme Variables Overrides */
+    --bs-body-bg: #121212;
+    --bs-body-color: #F5F5F5;
+    --bs-secondary-color: #B0B0B0;
+    --bs-tertiary-color: #909090;
+    --bs-secondary-bg: #232323;
+    --bs-tertiary-bg: #2D2D2D;
+    --bs-border-color: #2D2D2D;
+    --bs-card-bg: #1E1E1E;
+    --bs-card-color: #F5F5F5;
+    --bs-table-bg: #1E1E1E;
+    --bs-table-color: #F5F5F5;
+    --bs-table-striped-bg: #232323;
+    --bs-table-border-color: #2D2D2D;
+}
+
+body.dark-mode,
+body.dark-mode .sidebar-wrapper,
+body.dark-mode .rc-card,
+body.dark-mode .card,
+body.dark-mode .dropdown-menu,
+body.dark-mode header,
+body.dark-mode .modal-content,
+body.dark-mode .list-group-item,
+body.dark-mode .ai-queue-card,
+body.dark-mode .volunteer-card,
+body.dark-mode .shelter-card,
+body.dark-mode .donation-card,
+body.dark-mode .distribution-card,
+body.dark-mode .recovery-card,
+body.dark-mode .missing-card,
+body.dark-mode .portal-card,
+body.dark-mode .missing-person-card,
+body.dark-mode .family-updates-panel,
+body.dark-mode .bg-white,
+body.dark-mode .bg-light {
+    background-color: var(--bg-card) !important;
+    color: var(--text-dark) !important;
+}
+
+body.dark-mode {
+    background-color: var(--bg-page) !important;
+}
+
+body.dark-mode .border-bottom,
+body.dark-mode .border,
+body.dark-mode td,
+body.dark-mode th {
+    border-color: var(--border-color) !important;
+}
+
+/* Typography elements color */
+body.dark-mode p,
+body.dark-mode li,
+body.dark-mode td,
+body.dark-mode th,
+body.dark-mode label,
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6,
+body.dark-mode strong,
+body.dark-mode small,
+body.dark-mode .table,
+body.dark-mode table,
+body.dark-mode .table > :not(caption) > * > *,
+body.dark-mode div:not(.sidebar-title):not(.brand-logo):not(.badge):not(.status-badge),
+body.dark-mode span:not(.badge):not(.status-badge):not(.metric-indicator),
+body.dark-mode a:not(.btn):not(.sidebar-title):not(.brand-logo) {
+    color: #F5F5F5 !important;
+}
+
+/* Specific text muted / description colors */
+body.dark-mode p,
+body.dark-mode small,
+body.dark-mode .text-muted,
+body.dark-mode .queue-card-desc,
+body.dark-mode .missing-person-details,
+body.dark-mode .text-secondary {
+    color: #B0B0B0 !important;
+}
+
+/* Headings and bold titles color */
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6,
+body.dark-mode strong,
+body.dark-mode .fw-bold {
+    color: #FFFFFF !important;
+}
+
+/* Brand logo, status markers, and alerts accents */
+body.dark-mode .brand-logo,
+body.dark-mode .sidebar-title,
+body.dark-mode .text-danger,
+body.dark-mode .red-text,
+body.dark-mode .badge.bg-danger {
+    color: var(--brand-red) !important;
+}
+body.dark-mode .blue-text,
+body.dark-mode .text-primary {
+    color: #7C8BFC !important;
+}
+body.dark-mode .text-success {
+    color: #2ec4b6 !important;
+}
+body.dark-mode .text-warning {
+    color: #ff9f1c !important;
+}
+
+/* Background tints for dynamic status cards in dark mode */
+body.dark-mode .update-post-card {
+    background-color: #2D1416 !important; /* dark reddish tint */
+    border: 1px solid #4D2024 !important;
+}
+body.dark-mode .update-post-card.blue-update {
+    background-color: #141A2D !important; /* dark bluish tint */
+    border: 1px solid #202740 !important;
+}
+body.dark-mode .missing-tag {
+    background-color: #2D2D2D !important;
+    color: #F5F5F5 !important;
+}
+body.dark-mode .alert,
+body.dark-mode .alert-warning,
+body.dark-mode .alert-danger {
+    background-color: #2D1A1C !important;
+    color: #FFB0B0 !important;
+    border-color: #4D1A1C !important;
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+    background-color: #2D2D2D !important;
+    color: #F5F5F5 !important;
+    border-color: #3D3D3D !important;
+}
+
+body.dark-mode .btn-icon-round {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-dark) !important;
+}
+
+body.dark-mode .bg-light,
+body.dark-mode .table,
+body.dark-mode .accordion-item,
+body.dark-mode .accordion-button {
+    background-color: #232323 !important;
+    color: var(--text-dark) !important;
+}
+
+body.dark-mode .accordion-button::after {
+    filter: invert(1);
+}
+
+body.dark-mode #chatLogs {
+    background-color: #1a1a1a !important;
+}
+
+body.dark-mode .map-layer-box,
+body.dark-mode .map-status-overlay {
+    background-color: rgba(30, 30, 30, 0.9) !important;
+    border-color: #2D2D2D !important;
+    color: #F5F5F5 !important;
+}
+
+/* Supply grid box, urgency badges, and queue buttons overrides */
+body.dark-mode .supply-box {
+    background-color: #2D1D1B !important;
+    border: 1px solid #4D2E28 !important;
+}
+body.dark-mode .supply-value {
+    color: #FF7D6B !important;
+}
+body.dark-mode .supply-label {
+    color: #B0B0B0 !important;
+}
+
+body.dark-mode .badge-urgency.high {
+    background-color: #3D2D1B !important;
+    color: #FFB84D !important;
+}
+body.dark-mode .badge-urgency.critical {
+    background-color: var(--brand-red) !important;
+    color: white !important;
+}
+
+body.dark-mode .btn-queue-action.white-outline {
+    background-color: #2D2D2D !important;
+    color: #FFFFFF !important;
+    border-color: #4D4D4D !important;
+}
+body.dark-mode .btn-queue-action.white-outline:hover {
+    background-color: #3D3D3D !important;
+}
+
+/* Portal card category tags and distribution status badges overrides */
+body.dark-mode .portal-card-tag.critical {
+    background-color: #2D1416 !important;
+    color: #FF6B6B !important;
+}
+body.dark-mode .portal-card-tag.high {
+    background-color: #3D2D1B !important;
+    color: #FFB84D !important;
+}
+body.dark-mode .portal-card-tag.stable {
+    background-color: #142D1A !important;
+    color: #6BFF7A !important;
+}
+body.dark-mode .portal-card-tag.moderate {
+    background-color: #2D2014 !important;
+    color: #FF9E6B !important;
+}
+
+body.dark-mode .distribution-badge.verified {
+    background-color: #142D1A !important;
+    color: #6BFF7A !important;
+}
+body.dark-mode .distribution-badge.duplicate {
+    background-color: #2D1416 !important;
+    color: #FF6B6B !important;
+}
+
+
+

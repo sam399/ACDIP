@@ -16,13 +16,15 @@ from app.services.vulnerability import (
 )
 
 
-async def rerank_pending_requests(db: AsyncSession) -> list[EmergencyRequest]:
+async def rerank_pending_requests(db: AsyncSession, ai_weight: float = 0.60, hvi_weight: float = 0.40) -> list[EmergencyRequest]:
     result = await db.execute(
         select(EmergencyRequest)
         .options(selectinload(EmergencyRequest.vulnerability_assessment))
         .where(EmergencyRequest.status != "Completed")
     )
     requests = list(result.scalars().all())
+    for request in requests:
+        apply_vulnerability_scores(request, request.ai_priority, ai_weight, hvi_weight)
     requests.sort(
         key=lambda request: (
             AI_PRIORITY_SCORES.get(request.priority_override, -1)

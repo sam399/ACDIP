@@ -20,12 +20,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=2.5">
     
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.5"></script>
 </head>
-<body>
+<body class="{% if dark_mode == 'true' %}dark-mode{% endif %}">
 
     <!-- TOP HEADER NAVBAR -->
     <header class="navbar navbar-expand-lg navbar-light bg-white border-bottom py-3 px-4 sticky-top">
@@ -43,22 +43,25 @@
                 <!-- Navigation Tabs -->
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0 main-nav-tabs">
                     <li class="nav-item">
-                        <a class="nav-link {% if current_tab == 'dashboard' %}active{% endif %}" href="/">Dashboard</a>
+                        <a class="nav-link {% if current_tab == 'dashboard' %}active{% endif %}" href="/">{{ _("Dashboard") }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if current_tab == 'tracking' %}active{% endif %}" href="/tracking">Tracking</a>
+                        <a class="nav-link {% if current_tab == 'tracking' %}active{% endif %}" href="/tracking">{{ _("Tracking") }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if current_tab == 'resources' %}active{% endif %}" href="/resources">Resources</a>
+                        <a class="nav-link {% if current_tab == 'resources' %}active{% endif %}" href="/resources">{{ _("Resources") }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if current_tab == 'shelters' %}active{% endif %}" href="/shelters">Shelters</a>
+                        <a class="nav-link {% if current_tab == 'donations' %}active{% endif %}" href="/donations">{{ _("Donations") }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if current_tab == 'recovery' %}active{% endif %}" href="/recovery">Recovery</a>
+                        <a class="nav-link {% if current_tab == 'shelters' %}active{% endif %}" href="/shelters">{{ _("Shelters") }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if current_tab == 'missing_persons' %}active{% endif %}" href="/missing">Missing Persons</a>
+                        <a class="nav-link {% if current_tab == 'recovery' %}active{% endif %}" href="/recovery">{{ _("Recovery") }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if current_tab == 'missing_persons' %}active{% endif %}" href="/missing">{{ _("Missing Persons") }}</a>
                     </li>
                 </ul>
                 
@@ -74,19 +77,50 @@
                 <div class="d-flex align-items-center gap-3">
                     <a href="/sos" class="btn btn-emergency-call d-flex align-items-center gap-2">
                         <i class="bi bi-telephone-fill"></i>
-                        <span>EMERGENCY CALL</span>
+                        <span>{{ _("EMERGENCY CALL") }}</span>
                     </a>
-                    <button class="btn btn-icon-round position-relative">
-                        <i class="bi bi-bell"></i>
-                        <span class="position-absolute top-2 start-2 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
-                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-icon-round position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bell"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2" aria-labelledby="notificationDropdown" style="width: 320px; border-radius: 12px; font-size: 0.85rem; z-index: 1050;">
+                            <li class="dropdown-header fw-bold text-uppercase text-danger px-2 pb-2 border-bottom">System Alerts</li>
+                            <li><a class="dropdown-item rounded p-2 mt-1 d-flex gap-2 align-items-start" href="/#priority-queue" style="white-space: normal;">
+                                <span class="text-danger"><i class="bi bi-exclamation-octagon-fill"></i></span>
+                                <div>
+                                    <strong class="d-block text-dark">Water Shortage Alert</strong>
+                                    <span class="text-muted small">Satkhira: 18 families affected (Critical).</span>
+                                </div>
+                            </a></li>
+                            <li><a class="dropdown-item rounded p-2 d-flex gap-2 align-items-start" href="/#priority-queue" style="white-space: normal;">
+                                <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i></span>
+                                <div>
+                                    <strong class="d-block text-dark">Rooftop Stranded Rescue</strong>
+                                    <span class="text-muted small">Khulna: Stranded family of 5 reported (High).</span>
+                                </div>
+                            </a></li>
+                            <li><a class="dropdown-item rounded p-2 d-flex gap-2 align-items-start" href="/recovery" style="white-space: normal;">
+                                <span class="text-success"><i class="bi bi-check-circle-fill"></i></span>
+                                <div>
+                                    <strong class="d-block text-dark">Schools Reopened</strong>
+                                    <span class="text-muted small">Kurigram: 42 of 60 schools verified back.</span>
+                                </div>
+                            </a></li>
+                            <li class="text-center pt-2 border-top mt-2">
+                                <a href="/#priority-queue" class="text-danger small fw-semibold text-decoration-none">View All Queue Items</a>
+                            </li>
+                        </ul>
+                    </div>
                     
                     <button class="btn btn-icon-round">
                         <i class="bi bi-person-circle"></i>
                     </button>
                     
-                    <div class="lang-selector px-2 py-1 bg-light rounded text-muted small">
-                        <span>EN</span> • <span class="text-secondary-bangla">বাংলা</span>
+                    <div class="lang-selector px-2 py-1 bg-light rounded small">
+                        <a href="/change-lang/en" class="text-decoration-none {% if lang == 'en' %}fw-bold text-danger{% else %}text-muted{% endif %}">EN</a>
+                        •
+                        <a href="/change-lang/bn" class="text-decoration-none {% if lang == 'bn' %}fw-bold text-danger{% else %}text-secondary-bangla text-muted{% endif %}">বাংলা</a>
                     </div>
                 </div>
             </div>
@@ -113,5 +147,13 @@
 
     <!-- Custom Global Scripts -->
     {% block scripts %}{% endblock %}
+
+    {% if refresh_interval and refresh_interval != '0' %}
+    <script>
+        setTimeout(function() {
+            window.location.reload();
+        }, {{ refresh_interval }} * 1000);
+    </script>
+    {% endif %}
 </body>
 </html>

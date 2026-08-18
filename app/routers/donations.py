@@ -34,7 +34,7 @@ async def get_donations(
     return templates.TemplateResponse(
         request=request,
         name="donations.html",
-        context={"donations": donations, "current_tab": "resources", "search": search or ""},
+        context={"donations": donations, "current_tab": "donations", "search": search or ""},
     )
 
 
