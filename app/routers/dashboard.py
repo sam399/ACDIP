@@ -7,11 +7,10 @@ from app.database import get_db
 from app.models import Disaster, PersonnelStatus, SupplyInventory
 from app.services.priority import rerank_pending_requests
 from app.services.vulnerability import final_priority_score_for, hvi_score_for, readable_breakdown
+from app.services.predictive import calculate_predictive_shortages
 from app.web import templates
 
-
 router = APIRouter()
-
 
 @router.get("/", response_class=HTMLResponse)
 async def get_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
@@ -24,6 +23,9 @@ async def get_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         emergency.display_hvi_score = hvi_score_for(emergency)
         emergency.display_final_priority_score = final_priority_score_for(emergency)
     await db.commit()
+
+    # Calculate shortages
+    predictive_alerts = await calculate_predictive_shortages(db)
 
     supplies = list((await db.execute(select(SupplyInventory))).scalars().all())
     personnel = list((await db.execute(select(PersonnelStatus))).scalars().all())
@@ -44,6 +46,7 @@ async def get_dashboard(request: Request, db: AsyncSession = Depends(get_db)):
             "active_events_count": len(disasters),
             "affected_districts_count": len(districts) if districts else 30,
             "total_requests_count": len(priority_queue),
+            "predictive_alerts": predictive_alerts,
             "current_tab": "dashboard",
         },
     )

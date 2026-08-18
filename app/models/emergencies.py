@@ -36,6 +36,8 @@ class EmergencyRequest(Base):
     priority_override = Column(String, nullable=True)
     override_justification = Column(Text, nullable=True)
     override_updated_at = Column(DateTime, nullable=True)
+    trust_score = Column(Integer, default=100, nullable=False)
+    trust_breakdown = Column(Text, nullable=True)
 
     request_type = Column(String, default="Other")
     contact_name = Column(String, nullable=True)

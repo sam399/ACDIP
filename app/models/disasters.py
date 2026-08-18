@@ -34,6 +34,8 @@ class DamageReport(Base):
     description = Column(Text, nullable=True)
     status = Column(String, default="Reported")
     photo_url = Column(String, nullable=True)
+    trust_score = Column(Integer, default=100, nullable=False)
+    trust_breakdown = Column(Text, nullable=True)
     created_at = Column(DateTime, default=utc_now)
 
 

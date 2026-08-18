@@ -97,6 +97,11 @@ async def submit_sos_request(
     apply_vulnerability_scores(emergency, "Medium")
     db.add(emergency)
     await db.flush()
+    from app.services.trust import evaluate_trust_score
+    import json
+    trust_res = await evaluate_trust_score(emergency, db, is_emergency=True)
+    emergency.trust_score = trust_res["score"]
+    emergency.trust_breakdown = json.dumps(trust_res["breakdown"])
     existing_cookie = request.cookies.get("my_requests", "")
     updated_cookie = f"{existing_cookie},{emergency.id}" if existing_cookie else str(emergency.id)
     await db.commit()
@@ -145,7 +150,7 @@ async def submit_damage_report(
     photo: UploadFile | None = File(None),
     db: AsyncSession = Depends(get_db),
 ):
-    db.add(DamageReport(
+    damage = DamageReport(
         damage_type=damage_type,
         location=location,
         latitude=latitude,
@@ -154,7 +159,14 @@ async def submit_damage_report(
         status="Reported",
         photo_url=save_upload(photo, "dmg_"),
         created_at=utc_now(),
-    ))
+    )
+    db.add(damage)
+    await db.flush()
+    from app.services.trust import evaluate_trust_score
+    import json
+    trust_res = await evaluate_trust_score(damage, db, is_emergency=False)
+    damage.trust_score = trust_res["score"]
+    damage.trust_breakdown = json.dumps(trust_res["breakdown"])
     await db.commit()
     return RedirectResponse(url="/sos", status_code=303)
 
