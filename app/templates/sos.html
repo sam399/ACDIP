@@ -36,6 +36,18 @@
                     </div>
                 </div>
 
+                <div class="border rounded-3 p-3 mb-3 bg-light">
+                    <div class="fw-bold mb-1"><i class="bi bi-people-fill text-danger"></i> Household Vulnerability</div>
+                    <p class="small text-muted mb-3">Enter the number of household members in each group. This helps responders rank assistance fairly.</p>
+                    <div class="row g-3">
+                        <div class="col-6 col-md"><label class="form-label small">Elderly (65+)</label><input class="form-control" type="number" name="elderly_members" value="0" min="0" required></div>
+                        <div class="col-6 col-md"><label class="form-label small">Children</label><input class="form-control" type="number" name="children" value="0" min="0" required></div>
+                        <div class="col-6 col-md"><label class="form-label small">Pregnant</label><input class="form-control" type="number" name="pregnant_women" value="0" min="0" required></div>
+                        <div class="col-6 col-md"><label class="form-label small">Disabilities</label><input class="form-control" type="number" name="members_with_disabilities" value="0" min="0" required></div>
+                        <div class="col-6 col-md"><label class="form-label small">Chronic illness</label><input class="form-control" type="number" name="members_with_chronic_illness" value="0" min="0" required></div>
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <!-- Location with Auto-detect -->
                     <label for="location" class="form-label small fw-bold text-muted">Location *</label>
@@ -149,6 +161,7 @@
                     </div>
                     
                     <h6 class="fw-bold mb-1" style="font-size: 0.9rem;">{{ req.request_type }}</h6>
+                    <div class="small mb-2"><span class="badge bg-danger-subtle text-danger">HVI {{ req.display_hvi_score }}/100</span></div>
                     <p class="text-muted small mb-2">{{ req.description }}</p>
                     
                     <!-- Progress Bar matching Figma style -->

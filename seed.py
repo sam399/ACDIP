@@ -1,4 +1,8 @@
 import asyncio
+import argparse
+from alembic import command
+from alembic.config import Config
+from sqlalchemy import inspect, text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from app.config import settings
 from app.database import Base
@@ -7,16 +11,37 @@ from app.models import (
     MissingPerson, FamilyUpdate, DamageReport, Donation, Shelter, 
     CommunityResource, Volunteer, ReliefDistribution
 )
-from datetime import datetime, UTC
+from app.services.vulnerability import apply_vulnerability_scores
+from datetime import datetime
 
-async def seed():
+async def seed(reset: bool = False):
     print(f"Connecting to database: {settings.URL if hasattr(settings, 'URL') else settings.DATABASE_URL}")
     engine = create_async_engine(settings.DATABASE_URL)
     async_session = async_sessionmaker(engine, expire_on_commit=False)
-    
-    # Drop and recreate tables to ensure fresh state
+
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        existing_tables = set(await conn.run_sync(lambda sync_conn: inspect(sync_conn).get_table_names()))
+        model_tables = {table.name for table in Base.metadata.sorted_tables}
+        if existing_tables and not reset:
+            missing_tables = model_tables - existing_tables
+            if missing_tables:
+                raise RuntimeError(
+                    "Database schema is incomplete. Run `python -m alembic upgrade head` first."
+                )
+            populated_tables = await conn.run_sync(
+                lambda sync_conn: [
+                    table_name
+                    for table_name in sorted(model_tables)
+                    if sync_conn.execute(text(f'SELECT COUNT(*) FROM "{table_name}"')).scalar_one() > 0
+                ]
+            )
+            if populated_tables:
+                raise RuntimeError(
+                    "Database already contains application data; refusing to overwrite it. "
+                    "Use seed_module2.py for additive demo data or pass --reset explicitly."
+                )
+        if reset:
+            await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
         
     async with async_session() as session:
@@ -35,6 +60,8 @@ async def seed():
             EmergencyRequest(title="Flood Relief: Water Shortage", description="Shelter cluster in Satkhira reporting 4 hours of water supply remaining. 18 families affected.", priority="Critical", location="Dist. 4-A", status="Pending", people_affected=18, request_type="Water"),
             EmergencyRequest(title="Rescue: Rooftop Trapped", description="Family of 5 reported stranded on a rooftop in Khulna. Rising floodwaters at 1.5 ft/hr.", priority="High", location="Riverbend View", status="Pending", people_affected=5, request_type="Rescue")
         ]
+        for emergency in requests:
+            apply_vulnerability_scores(emergency, emergency.priority)
         session.add_all(requests)
         
         # 3. Seed personnel status
@@ -101,9 +128,9 @@ async def seed():
 
         # 10. Seed Shelters (Feature 9 Placeholder)
         shelters = [
-            Shelter(name="Chattogram Recreation Center", capacity_beds=150, available_beds=8, food_stock_days=2, contact_number="(555) 012-3456"),
-            Shelter(name="TigerX Gym", capacity_beds=200, available_beds=140, food_stock_days=8, contact_number="(555) 987-6543"),
-            Shelter(name="Paradise Community Hall", capacity_beds=100, available_beds=25, food_stock_days=3, contact_number="(555) 234-5678")
+            Shelter(name="Chattogram Recreation Center", location="Chattogram", capacity_total=150, capacity_available=8, food_stock="2 days", contact_details="(555) 012-3456"),
+            Shelter(name="TigerX Gym", location="Dhaka", capacity_total=200, capacity_available=140, food_stock="8 days", contact_details="(555) 987-6543"),
+            Shelter(name="Paradise Community Hall", location="Khulna", capacity_total=100, capacity_available=25, food_stock="3 days", contact_details="(555) 234-5678")
         ]
         session.add_all(shelters)
 
@@ -117,7 +144,23 @@ async def seed():
         session.add_all(distributions)
         
         await session.commit()
+    await engine.dispose()
     print("Database successfully seeded with Figma design mock data!")
 
+
+def stamp_database_head() -> None:
+    """Mark a schema created from current metadata as the current baseline."""
+    command.stamp(Config(str(settings.PROJECT_ROOT / "alembic.ini")), "head")
+
 if __name__ == "__main__":
-    asyncio.run(seed())
+    parser = argparse.ArgumentParser(description="Initialize RESPOND-ER demo data.")
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="Explicitly drop all existing tables before seeding (destructive).",
+    )
+    try:
+        asyncio.run(seed(reset=parser.parse_args().reset))
+        stamp_database_head()
+    except RuntimeError as error:
+        parser.exit(status=1, message=f"Seed aborted: {error}\n")

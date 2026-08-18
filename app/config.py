@@ -1,12 +1,25 @@
 import os
+from dataclasses import dataclass
+from pathlib import Path
+
 from dotenv import load_dotenv
 
-load_dotenv()
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+load_dotenv(PROJECT_ROOT / ".env")
 
+@dataclass(frozen=True)
 class Settings:
-    PROJECT_NAME: str = "RESPOND-ER"
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./respond_er.db")
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production-12345")
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    PROJECT_ROOT: Path
+    PROJECT_NAME: str
+    DATABASE_URL: str
+    SECRET_KEY: str
+    GEMINI_API_KEY: str
 
-settings = Settings()
+
+settings = Settings(
+    PROJECT_ROOT=PROJECT_ROOT,
+    PROJECT_NAME="RESPOND-ER",
+    DATABASE_URL=os.getenv("DATABASE_URL", f"sqlite+aiosqlite:///{(PROJECT_ROOT / 'respond_er.db').as_posix()}"),
+    SECRET_KEY=os.getenv("SECRET_KEY", "dev-secret-key-change-in-production-12345"),
+    GEMINI_API_KEY=os.getenv("GEMINI_API_KEY", ""),
+)
