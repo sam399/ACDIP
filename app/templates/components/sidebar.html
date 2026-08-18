@@ -1,66 +1,113 @@
 <div class="sidebar-wrapper h-100">
     <div>
-        <div class="sidebar-title">Bangladesh</div>
-        <div class="sidebar-title">Command Center</div>
-        <div class="sidebar-subtitle">Dhaka Operations View</div>
+        <div class="sidebar-title">{% if lang == 'bn' %}বাংলাদেশ{% else %}Bangladesh{% endif %}</div>
+        <div class="sidebar-title">{% if lang == 'bn' %}কমান্ড সেন্টার{% else %}Command Center{% endif %}</div>
+        <div class="sidebar-subtitle">{% if lang == 'bn' %}ঢাকা অপারেশনস ভিউ{% else %}Dhaka Operations View{% endif %}</div>
         
         <ul class="sidebar-menu">
+            {% if user_role == 'citizen' %}
+            <!-- Citizen Only Views -->
+            <li>
+                <a href="/sos" class="sidebar-menu-item {% if current_tab == 'sos' %}active{% endif %}">
+                    <i class="bi bi-telephone-fill"></i>
+                    <span>{{ _("Citizens SOS") }}</span>
+                </a>
+            </li>
+            <li>
+                <a href="/missing" class="sidebar-menu-item {% if current_tab == 'missing_persons' %}active{% endif %}">
+                    <i class="bi bi-person-bounding-box"></i>
+                    <span>{{ _("Missing Persons") }}</span>
+                </a>
+            </li>
+            <li>
+                <a href="/donations" class="sidebar-menu-item {% if current_tab == 'donations' %}active{% endif %}">
+                    <i class="bi bi-heart-fill"></i>
+                    <span>{{ _("Donate Resources") }}</span>
+                </a>
+            </li>
+            <li>
+                <a href="/chatbot" class="sidebar-menu-item {% if current_tab == 'chatbot' %}active{% endif %}">
+                    <i class="bi bi-chat-left-dots"></i>
+                    <span>{{ _("AI Assistant") }}</span>
+                </a>
+            </li>
+            {% else %}
+            <!-- Admin / Responder Shared Views -->
             <li>
                 <a href="/" class="sidebar-menu-item {% if current_tab == 'dashboard' %}active{% endif %}">
                     <i class="bi bi-asterisk"></i>
-                    <span>Incident Control</span>
+                    <span>{{ _("Incident Control") }}</span>
                 </a>
             </li>
             <li>
                 <a href="/resources" class="sidebar-menu-item {% if current_tab == 'resources' %}active{% endif %}">
                     <i class="bi bi-map"></i>
-                    <span>Resource Map</span>
+                    <span>{{ _("Resource Map") }}</span>
                 </a>
             </li>
             <li>
                 <a href="/resources" class="sidebar-menu-item">
                     <i class="bi bi-building"></i>
-                    <span>NGO Portal</span>
+                    <span>{{ _("NGO Portal") }}</span>
                 </a>
             </li>
             <li>
                 <a href="/shelters" class="sidebar-menu-item {% if current_tab == 'shelters' %}active{% endif %}">
                     <i class="bi bi-people"></i>
-                    <span>Volunteer Hub</span>
+                    <span>{{ _("Volunteer Hub") }}</span>
                 </a>
             </li>
             <li>
                 <a href="/tracking" class="sidebar-menu-item {% if current_tab == 'tracking' %}active{% endif %}">
                     <i class="bi bi-truck"></i>
-                    <span>Distribution Tracker</span>
+                    <span>{{ _("Distribution Tracker") }}</span>
                 </a>
             </li>
             <li>
-                <a href="#" class="sidebar-menu-item">
-                    <i class="bi bi-journal-text"></i>
-                    <span>Audit Logs</span>
+                <a href="/recovery" class="sidebar-menu-item {% if current_tab == 'recovery' %}active{% endif %}">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>{{ _("Recovery Progress") }}</span>
                 </a>
             </li>
+            <li>
+                <a href="/chatbot" class="sidebar-menu-item {% if current_tab == 'chatbot' %}active{% endif %}">
+                    <i class="bi bi-chat-left-dots"></i>
+                    <span>{{ _("AI Assistant") }}</span>
+                </a>
+            </li>
+            {% if user_role == 'admin' %}
+            <li>
+                <a href="/audit-logs" class="sidebar-menu-item {% if current_tab == 'audit-logs' %}active{% endif %}">
+                    <i class="bi bi-journal-text"></i>
+                    <span>{{ _("Audit Logs") }}</span>
+                </a>
+            </li>
+            {% endif %}
+            {% endif %}
         </ul>
     </div>
     
     <div>
-        <button class="btn btn-deploy-response mb-3" onclick="alert('Deploying emergency response dispatch units.')">
+        {% if user_role != 'citizen' %}
+        <button class="btn btn-deploy-response mb-3" data-bs-toggle="modal" data-bs-target="#deployResponseModal">
             <i class="bi bi-rocket-takeoff-fill"></i>
-            <span>DEPLOY RESPONSE</span>
+            <span>{{ _("DEPLOY RESPONSE") }}</span>
         </button>
+        {% endif %}
         
         <ul class="sidebar-menu">
+            {% if user_role == 'admin' %}
             <li>
-                <a href="#" class="sidebar-menu-item">
+                <a href="/settings" class="sidebar-menu-item {% if current_tab == 'settings' %}active{% endif %}">
                     <i class="bi bi-gear"></i>
-                    <span>Settings</span>
+                    <span>{{ _("Settings") }}</span>
                 </a>
             </li>
+            {% endif %}
             <li>
-                <a href="#" class="sidebar-menu-item">
+                <a href="/support" class="sidebar-menu-item {% if current_tab == 'support' %}active{% endif %}">
                     <i class="bi bi-question-circle"></i>
-                    <span>Support</span>
+                    <span>{{ _("Support") }}</span>
                 </a>
             </li>
         </ul>

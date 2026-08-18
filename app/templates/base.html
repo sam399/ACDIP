@@ -20,12 +20,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=2.5">
     
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.5"></script>
 </head>
-<body>
+<body class="{% if dark_mode == 'true' %}dark-mode{% endif %}">
 
     <!-- TOP HEADER NAVBAR -->
     <header class="navbar navbar-expand-lg navbar-light bg-white border-bottom py-3 px-4 sticky-top">
@@ -42,20 +42,28 @@
             <div class="collapse navbar-collapse" id="topNavbar">
                 <!-- Navigation Tabs -->
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0 main-nav-tabs">
+                    {% if user_role != 'citizen' %}
                     <li class="nav-item">
-                        <a class="nav-link {% if current_tab == 'dashboard' %}active{% endif %}" href="/">Dashboard</a>
+                        <a class="nav-link {% if current_tab == 'dashboard' %}active{% endif %}" href="/">{{ _("Dashboard") }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if current_tab == 'tracking' %}active{% endif %}" href="/tracking">Tracking</a>
+                        <a class="nav-link {% if current_tab == 'tracking' %}active{% endif %}" href="/tracking">{{ _("Tracking") }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if current_tab == 'resources' %}active{% endif %}" href="/resources">Resources</a>
+                        <a class="nav-link {% if current_tab == 'resources' %}active{% endif %}" href="/resources">{{ _("Resources") }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if current_tab == 'shelters' %}active{% endif %}" href="/shelters">Shelters</a>
+                        <a class="nav-link {% if current_tab == 'shelters' %}active{% endif %}" href="/shelters">{{ _("Shelters") }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if current_tab == 'missing_persons' %}active{% endif %}" href="/missing">Missing Persons</a>
+                        <a class="nav-link {% if current_tab == 'recovery' %}active{% endif %}" href="/recovery">{{ _("Recovery") }}</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if current_tab == 'donations' %}active{% endif %}" href="/donations">{{ _("Donations") }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if current_tab == 'missing_persons' %}active{% endif %}" href="/missing">{{ _("Missing Persons") }}</a>
                     </li>
                 </ul>
                 
@@ -71,19 +79,166 @@
                 <div class="d-flex align-items-center gap-3">
                     <a href="/sos" class="btn btn-emergency-call d-flex align-items-center gap-2">
                         <i class="bi bi-telephone-fill"></i>
-                        <span>EMERGENCY CALL</span>
+                        <span>{{ _("EMERGENCY CALL") }}</span>
                     </a>
-                    <button class="btn btn-icon-round position-relative">
-                        <i class="bi bi-bell"></i>
-                        <span class="position-absolute top-2 start-2 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
-                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-icon-round position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bell"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 mt-2" aria-labelledby="notificationDropdown" style="width: 320px; border-radius: 12px; font-size: 0.85rem; z-index: 1050;">
+                            <li class="dropdown-header fw-bold text-uppercase text-danger px-2 pb-2 border-bottom">System Alerts</li>
+                            <li><a class="dropdown-item rounded p-2 mt-1 d-flex gap-2 align-items-start" href="/#priority-queue" style="white-space: normal;">
+                                <span class="text-danger"><i class="bi bi-exclamation-octagon-fill"></i></span>
+                                <div>
+                                    <strong class="d-block text-dark">Water Shortage Alert</strong>
+                                    <span class="text-muted small">Satkhira: 18 families affected (Critical).</span>
+                                </div>
+                            </a></li>
+                            <li><a class="dropdown-item rounded p-2 d-flex gap-2 align-items-start" href="/#priority-queue" style="white-space: normal;">
+                                <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i></span>
+                                <div>
+                                    <strong class="d-block text-dark">Rooftop Stranded Rescue</strong>
+                                    <span class="text-muted small">Khulna: Stranded family of 5 reported (High).</span>
+                                </div>
+                            </a></li>
+                            <li><a class="dropdown-item rounded p-2 d-flex gap-2 align-items-start" href="/recovery" style="white-space: normal;">
+                                <span class="text-success"><i class="bi bi-check-circle-fill"></i></span>
+                                <div>
+                                    <strong class="d-block text-dark">Schools Reopened</strong>
+                                    <span class="text-muted small">Kurigram: 42 of 60 schools verified back.</span>
+                                </div>
+                            </a></li>
+                            <li class="text-center pt-2 border-top mt-2">
+                                <a href="/#priority-queue" class="text-danger small fw-semibold text-decoration-none">View All Queue Items</a>
+                            </li>
+                        </ul>
+                    </div>
                     
-                    <button class="btn btn-icon-round">
-                        <i class="bi bi-person-circle"></i>
-                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-icon-round" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-3 mt-2" aria-labelledby="profileDropdown" style="width: 290px; border-radius: 12px; font-size: 0.9rem; z-index: 1050;">
+                            <!-- Active User Persona Card -->
+                            <div class="d-flex align-items-center gap-2 pb-2 mb-2 border-bottom">
+                                {% if user_role == 'citizen' %}
+                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; font-size: 1.1rem;">
+                                    GC
+                                </div>
+                                <div>
+                                    <strong class="d-block text-dark">General Citizen</strong>
+                                    <span class="text-muted small">Anonymous Session</span>
+                                </div>
+                                {% elif user_role == 'responder' %}
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; font-size: 1.1rem;">
+                                    FA
+                                </div>
+                                <div>
+                                    <strong class="d-block text-dark">NGO Field Agent</strong>
+                                    <span class="text-muted small">agent-3@refugee-aid.org</span>
+                                </div>
+                                {% else %}
+                                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; font-size: 1.1rem;">
+                                    AD
+                                </div>
+                                <div>
+                                    <strong class="d-block text-dark">Admin Dispatcher</strong>
+                                    <span class="text-muted small">admin@responder.gov.bd</span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Role Badges & Simulated Stats -->
+                            <div class="mb-3 p-2 rounded bg-light border border-light-subtle" style="font-size: 0.8rem;">
+                                {% if user_role == 'citizen' %}
+                                <span class="badge bg-secondary-subtle text-secondary text-uppercase fw-bold font-monospace d-block text-center mb-2" style="font-size: 0.65rem;">
+                                    {{ _("General Citizen Mode") }}
+                                </span>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted">SOS Alerts:</span>
+                                    <span class="fw-bold">2 Active</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Safe Status:</span>
+                                    <span class="text-success fw-bold">Verified</span>
+                                </div>
+                                {% elif user_role == 'responder' %}
+                                <span class="badge bg-primary-subtle text-primary text-uppercase fw-bold font-monospace d-block text-center mb-2" style="font-size: 0.65rem;">
+                                    {{ _("NGO Field Agent Mode") }}
+                                </span>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted">NGO Unit:</span>
+                                    <span class="fw-bold">North Sector</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Supplies Logged:</span>
+                                    <span class="fw-bold text-primary">840 Kits</span>
+                                </div>
+                                {% else %}
+                                <span class="badge bg-danger-subtle text-danger text-uppercase fw-bold font-monospace d-block text-center mb-2" style="font-size: 0.65rem;">
+                                    {{ _("Command Center Admin Mode") }}
+                                </span>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted">Dispatch Key:</span>
+                                    <span class="fw-bold font-monospace">CMD-992</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Response Rate:</span>
+                                    <span class="fw-bold text-danger">94%</span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Role Switcher Actions -->
+                            <div class="mb-2">
+                                <small class="text-muted d-block mb-1 font-monospace text-uppercase" style="font-size: 0.65rem;">{{ _("Switch active role:") }}</small>
+                                <div class="list-group list-group-flush border-0" style="font-size: 0.85rem;">
+                                    <a href="/change-role/admin" class="list-group-item list-group-item-action border-0 rounded p-1 d-flex align-items-center gap-2 {% if user_role == 'admin' %}active bg-danger-subtle text-danger fw-bold{% endif %}">
+                                        <i class="bi bi-shield-lock"></i> {{ _("Admin Dispatcher") }}
+                                    </a>
+                                    <a href="/change-role/responder" class="list-group-item list-group-item-action border-0 rounded p-1 d-flex align-items-center gap-2 {% if user_role == 'responder' %}active bg-primary-subtle text-primary fw-bold{% endif %}">
+                                        <i class="bi bi-truck"></i> {{ _("Field Responder") }}
+                                    </a>
+                                    <a href="/change-role/citizen" class="list-group-item list-group-item-action border-0 rounded p-1 d-flex align-items-center gap-2 {% if user_role == 'citizen' %}active bg-secondary-subtle text-secondary fw-bold{% endif %}">
+                                        <i class="bi bi-person"></i> {{ _("General Citizen") }}
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Platform Settings & Audit Logs (Admin & Responder only) -->
+                            {% if user_role != 'citizen' %}
+                            <ul class="list-unstyled mb-2 d-flex flex-column gap-1 pt-2 border-top">
+                                <li>
+                                    <a class="dropdown-item rounded p-1 d-flex align-items-center gap-2" href="/settings">
+                                        <i class="bi bi-gear text-muted"></i>
+                                        <span>{{ _("Platform Settings") }}</span>
+                                    </a>
+                                </li>
+                                {% if user_role == 'admin' %}
+                                <li>
+                                    <a class="dropdown-item rounded p-1 d-flex align-items-center gap-2" href="/audit-logs">
+                                        <i class="bi bi-journal-text text-muted"></i>
+                                        <span>{{ _("Audit Logs") }}</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                            {% endif %}
+
+                            <!-- Factory Reset / Logout Action -->
+                            <div class="pt-2 border-top mt-2 text-center">
+                                <a href="/reset-session" class="btn btn-outline-danger btn-sm w-100 font-monospace" style="font-size: 0.75rem; border-radius: 6px;">
+                                    <i class="bi bi-arrow-counterclockwise"></i> {{ _("RESET PLATFORM SESSION") }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <div class="lang-selector px-2 py-1 bg-light rounded text-muted small">
-                        <span>EN</span> • <span class="text-secondary-bangla">বাংলা</span>
+                    <div class="lang-selector px-2 py-1 bg-light rounded small">
+                        <a href="/change-lang/en" class="text-decoration-none {% if lang == 'en' %}fw-bold text-danger{% else %}text-muted{% endif %}">EN</a>
+                        •
+                        <a href="/change-lang/bn" class="text-decoration-none {% if lang == 'bn' %}fw-bold text-danger{% else %}text-secondary-bangla text-muted{% endif %}">বাংলা</a>
                     </div>
                 </div>
             </div>
@@ -110,5 +265,171 @@
 
     <!-- Custom Global Scripts -->
     {% block scripts %}{% endblock %}
+
+    {% if refresh_interval and refresh_interval != '0' %}
+    <script>
+        setTimeout(function() {
+            window.location.reload();
+        }, {{ refresh_interval }} * 1000);
+    </script>
+    {% endif %}
+
+    <!-- Coordinated Dispatch Modal -->
+    <div class="modal fade" id="deployResponseModal" tabindex="-1" aria-labelledby="deployResponseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" style="border-radius: 12px; background-color: #ffffff; color: #212529;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-danger" id="deployResponseModalLabel">
+                        <i class="bi bi-rocket-takeoff-fill me-2"></i> Coordinated Dispatch Center
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-close="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">Simulate deployment and asset allocations to active incident priority queues.</p>
+                    
+                    <!-- Dispatch setup panel -->
+                    <div id="dispatchSetup">
+                        <!-- Select Assets -->
+                        <div class="mb-4">
+                            <strong class="d-block mb-2 text-dark font-monospace text-uppercase" style="font-size: 0.75rem;">1. Select Coordination Assets</strong>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <div class="form-check p-3 rounded border bg-light d-flex align-items-center gap-2">
+                                        <input class="form-check-input ms-0 me-2" type="checkbox" id="assetHeli" checked>
+                                        <label class="form-check-label text-dark small fw-semibold" for="assetHeli">
+                                            🚁 Medevac Helicopter (Heli-1)
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check p-3 rounded border bg-light d-flex align-items-center gap-2">
+                                        <input class="form-check-input ms-0 me-2" type="checkbox" id="assetBoat" checked>
+                                        <label class="form-check-label text-dark small fw-semibold" for="assetBoat">
+                                            🚤 NGO Inflatable Boats (Unit 3)
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check p-3 rounded border bg-light d-flex align-items-center gap-2">
+                                        <input class="form-check-input ms-0 me-2" type="checkbox" id="assetTruck">
+                                        <label class="form-check-label text-dark small fw-semibold" for="assetTruck">
+                                            🚛 Water Purification Truck
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check p-3 rounded border bg-light d-flex align-items-center gap-2">
+                                        <input class="form-check-input ms-0 me-2" type="checkbox" id="assetVol" checked>
+                                        <label class="form-check-label text-dark small fw-semibold" for="assetVol">
+                                            👷 Volunteer Rescue Squad B
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Select target incidents -->
+                        <div class="mb-4">
+                            <strong class="d-block mb-2 text-dark font-monospace text-uppercase" style="font-size: 0.75rem;">2. Select Target Incident Zone</strong>
+                            <select id="dispatchTarget" class="form-select">
+                                <option value="all">All Pending Incidents (Bulk Resolve)</option>
+                                <option value="Satkhira">Satkhira Division Sector 2</option>
+                                <option value="Sylhet">Sylhet Division Sector 3</option>
+                                <option value="Khulna">Khulna Division Sector 1</option>
+                            </select>
+                        </div>
+
+                        <button type="button" class="btn btn-danger w-100 fw-bold py-2" onclick="startDispatchSimulation()">
+                            <i class="bi bi-rocket-takeoff-fill me-1"></i> LAUNCH TACTICAL DISPATCH
+                        </button>
+                    </div>
+
+                    <!-- Simulation Progress loader -->
+                    <div id="dispatchLoading" class="d-none py-4 text-center">
+                        <div class="spinner-border text-danger mb-3" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-1" id="dispatchStatusText">Initializing telemetry...</h5>
+                        <p class="text-muted small mb-0">Satellite telemetry and asset locks active.</p>
+                    </div>
+
+                    <!-- Success State -->
+                    <div id="dispatchSuccess" class="d-none py-4 text-center">
+                        <div class="display-3 text-success mb-3"><i class="bi bi-check-circle-fill"></i></div>
+                        <h4 class="fw-bold text-dark mb-2">Tactical Deployment Active!</h4>
+                        <p class="text-muted small mb-4" id="dispatchSummaryText">Selected assets successfully routed. Incident records updated.</p>
+                        <button type="button" class="btn btn-success px-4" onclick="confirmResetAndReload()">
+                            Confirm & Refresh Queue
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comms Dispatch Simulation Logic -->
+    <script>
+        let dispatchTimer = null;
+
+        function startDispatchSimulation() {
+            document.getElementById('dispatchSetup').classList.add('d-none');
+            document.getElementById('dispatchLoading').classList.remove('d-none');
+            
+            const statusText = document.getElementById('dispatchStatusText');
+            const steps = [
+                "Initializing GPS telemetry coordinates...",
+                "Establishing satellite data link channel 4...",
+                "Routing Medevac-1 and NGO Boat Units...",
+                "Synchronizing telemetry logs in database...",
+                "Tactical Dispatch Completed!"
+            ];
+            
+            let stepIdx = 0;
+            statusText.innerText = steps[0];
+            
+            dispatchTimer = setInterval(function() {
+                stepIdx++;
+                if (stepIdx < steps.length) {
+                    statusText.innerText = steps[stepIdx];
+                } else {
+                    clearInterval(dispatchTimer);
+                    showDispatchSuccess();
+                }
+            }, 600);
+        }
+
+        function showDispatchSuccess() {
+            document.getElementById('dispatchLoading').classList.add('d-none');
+            document.getElementById('dispatchSuccess').classList.remove('d-none');
+            
+            const targetZone = document.getElementById('dispatchTarget').value;
+            const summary = document.getElementById('dispatchSummaryText');
+            
+            let deployedAssets = [];
+            if (document.getElementById('assetHeli').checked) deployedAssets.push("Medevac Heli");
+            if (document.getElementById('assetBoat').checked) deployedAssets.push("NGO Inflatable Boats");
+            if (document.getElementById('assetTruck').checked) deployedAssets.push("Water Purification Truck");
+            if (document.getElementById('assetVol').checked) deployedAssets.push("Volunteer Squad B");
+            
+            summary.innerHTML = `<strong>Assets deployed:</strong> ${deployedAssets.join(', ') || 'None'}<br>` +
+                                `<strong>Target Incident:</strong> ${targetZone === 'all' ? 'All active pending requests' : 'Sector in ' + targetZone}<br>` +
+                                `<span class="text-success fw-semibold">Statuses synchronized and resolved.</span>`;
+        }
+
+        function confirmResetAndReload() {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/admin/requests/bulk-dispatch';
+            
+            const idsInput = document.createElement('input');
+            idsInput.type = 'hidden';
+            idsInput.name = 'request_ids';
+            idsInput.value = 'all';
+            
+            form.appendChild(idsInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
 </body>
 </html>

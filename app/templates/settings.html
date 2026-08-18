@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-3 col-md-4">{% include 'components/sidebar.html' %}</div>
+    
+    <main class="col-lg-9 col-md-8 py-2">
+        <div class="mb-4">
+            <div class="text-uppercase text-danger fw-bold small">System Control</div>
+            <h2 class="fw-bold mb-1">Platform Settings</h2>
+            <p class="text-muted mb-0">Tune system triage logic weights, reload frequencies, and API preferences.</p>
+        </div>
+
+        {% if success %}
+        <div class="alert alert-success d-flex align-items-center gap-2 rounded-3 border-0 shadow-sm mb-4" role="alert">
+            <i class="bi bi-check-circle-fill"></i>
+            <div>Settings saved successfully! System prioritization and preferences updated.</div>
+        </div>
+        {% endif %}
+
+        <form action="/settings/save" method="post" class="rc-card p-4 bg-white" style="border-radius: 12px;">
+            <!-- Weights Optimization -->
+            <div class="mb-4 pb-4 border-bottom">
+                <h5 class="fw-bold text-dark mb-2">Triage & Prioritization Weights</h5>
+                <p class="small text-muted mb-3">Adjust the priority balance between AI triage model analysis and the Household Vulnerability Index (HVI) scoring system. Weights must sum to 100%.</p>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">AI Triage Weight: <span id="aiWeightVal">{{ ai_weight }}</span>%</label>
+                        <input type="range" class="form-range" min="0" max="100" name="ai_weight" id="ai_weight" value="{{ ai_weight }}" oninput="adjustWeights('ai')">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">HVI Weight: <span id="hviWeightVal">{{ hvi_weight }}</span>%</label>
+                        <input type="range" class="form-range" min="0" max="100" name="hvi_weight" id="hvi_weight" value="{{ hvi_weight }}" oninput="adjustWeights('hvi')">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gemini Config -->
+            <div class="mb-4 pb-4 border-bottom">
+                <h5 class="fw-bold text-dark mb-2">Google Gemini Integration</h5>
+                <p class="small text-muted mb-3">Input your API key to power the AI Emergency Prioritization and AI Chatbot assistants.</p>
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Gemini API Key</label>
+                    <input type="password" name="gemini_key" class="form-control" placeholder="AIzaSy..." value="{{ gemini_key }}" style="border-radius: 8px;">
+                </div>
+            </div>
+
+            <!-- Preferences -->
+            <div class="mb-4">
+                <h5 class="fw-bold text-dark mb-2">General User Preferences</h5>
+                <p class="small text-muted mb-3">Configure active dashboard refreshes and UI themes.</p>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Auto-Refresh Interval</label>
+                        <select name="refresh_interval" class="form-select" style="border-radius: 8px;">
+                            <option value="0" {% if refresh_interval == '0' %}selected{% endif %}>Disabled</option>
+                            <option value="5" {% if refresh_interval == '5' %}selected{% endif %}>Every 5 Seconds</option>
+                            <option value="15" {% if refresh_interval == '15' %}selected{% endif %}>Every 15 Seconds</option>
+                            <option value="30" {% if refresh_interval == '30' %}selected{% endif %}>Every 30 Seconds</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" role="switch" name="dark_mode_cb" id="dark_mode_cb" {% if dark_mode == 'true' %}checked{% endif %} onchange="updateDarkModeVal()">
+                            <input type="hidden" name="dark_mode" id="dark_mode" value="{{ dark_mode }}">
+                            <label class="form-check-label fw-semibold" for="dark_mode_cb">Enable Dark Theme Mode</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <button type="submit" class="btn btn-danger px-4" style="background-color: var(--brand-red); border-radius: 8px;">Save Settings</button>
+            </div>
+        </form>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function adjustWeights(source) {
+        const aiSlider = document.getElementById('ai_weight');
+        const hviSlider = document.getElementById('hvi_weight');
+        const aiVal = document.getElementById('aiWeightVal');
+        const hviVal = document.getElementById('hviWeightVal');
+
+        let val = 0;
+        if (source === 'ai') {
+            val = parseInt(aiSlider.value);
+            hviSlider.value = 100 - val;
+        } else {
+            val = parseInt(hviSlider.value);
+            aiSlider.value = 100 - val;
+        }
+        aiVal.innerText = aiSlider.value;
+        hviVal.innerText = hviSlider.value;
+    }
+
+    function updateDarkModeVal() {
+        const cb = document.getElementById('dark_mode_cb');
+        const val = document.getElementById('dark_mode');
+        val.value = cb.checked ? 'true' : 'false';
+        if (cb.checked) {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+    }
+</script>
+{% endblock %}

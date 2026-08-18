@@ -73,7 +73,7 @@ async def test_endpoint_async_ai_triage():
     
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.post("/sos/submit", data=form_data)
-        
+
     assert response.status_code == 303
     
     # Wait briefly for the background task to execute

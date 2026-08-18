@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-3 col-md-4">{% include 'components/sidebar.html' %}</div>
+    
+    <main class="col-lg-9 col-md-8 py-2">
+        <div class="mb-4">
+            <div class="text-uppercase text-danger fw-bold small">Feature 12</div>
+            <h2 class="fw-bold mb-1">AI Disaster Assistant</h2>
+            <p class="text-muted mb-0">Ask questions regarding nearest shelters, emergency contacts, flood safety, cyclone preparedness, and food distribution locations.</p>
+        </div>
+
+        <div class="rc-card d-flex flex-column" style="height: 520px; background-color: white;">
+            <!-- Chat logs window -->
+            <div class="flex-grow-1 overflow-auto p-3" id="chatLogs" style="background-color: #fcf8f6; border-radius: 8px; border: 1px solid var(--border-color);">
+                <!-- Initial bot message -->
+                <div class="d-flex gap-2 mb-3">
+                    <div class="btn-icon-round bg-danger text-white border-0" style="width: 36px; height: 36px; flex-shrink: 0;">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <div class="p-3 bg-white border shadow-sm rounded-3 small" style="max-width: 75%;">
+                        <p class="mb-0 fw-semibold">Hello! I am the RESPOND-ER AI Assistant.</p>
+                        <p class="mb-0 mt-1">I can help you with safety guidelines, finding active shelters, emergency contacts, or supply stations. What is your question?</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input area -->
+            <div class="pt-3 border-top mt-3">
+                <form id="chatForm" onsubmit="submitChatMessage(event)" class="d-flex gap-2">
+                    <input type="text" id="userInput" class="form-control" placeholder="Ask about shelters, emergency contacts, safety safety instructions..." required style="height: 48px; border-radius: 8px;">
+                    <button type="submit" class="btn btn-danger d-flex align-items-center justify-content-center px-4" style="background-color: var(--brand-red); border-radius: 8px; width: 60px;">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const chatLogs = document.getElementById('chatLogs');
+    const userInput = document.getElementById('userInput');
+
+    function appendMessage(sender, text) {
+        const isBot = sender === 'bot';
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'd-flex gap-2 mb-3 ' + (isBot ? '' : 'justify-content-end');
+
+        let avatar = '';
+        if (isBot) {
+            avatar = `<div class="btn-icon-round bg-danger text-white border-0" style="width: 36px; height: 36px; flex-shrink: 0;"><i class="bi bi-robot"></i></div>`;
+        } else {
+            avatar = `<div class="btn-icon-round bg-primary text-white border-0" style="width: 36px; height: 36px; flex-shrink: 0;"><i class="bi bi-person-fill"></i></div>`;
+        }
+
+        const bubble = `
+            <div class="p-3 ${isBot ? 'bg-white border' : 'bg-danger text-white border-0'} shadow-sm rounded-3 small" style="max-width: 75%; text-align: left;">
+                <p class="mb-0">${text.replace(/\n/g, '<br>')}</p>
+            </div>
+        `;
+
+        msgDiv.innerHTML = isBot ? (avatar + bubble) : (bubble + avatar);
+        chatLogs.appendChild(msgDiv);
+        chatLogs.scrollTop = chatLogs.scrollHeight;
+    }
+
+    function submitChatMessage(e) {
+        e.preventDefault();
+        const text = userInput.value.trim();
+        if (!text) return;
+
+        appendMessage('user', text);
+        userInput.value = '';
+
+        // Add a temporary typing bubble
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'd-flex gap-2 mb-3';
+        typingDiv.id = 'typingBubble';
+        typingDiv.innerHTML = `
+            <div class="btn-icon-round bg-danger text-white border-0" style="width: 36px; height: 36px;"><i class="bi bi-robot"></i></div>
+            <div class="p-3 bg-white border shadow-sm rounded-3 small text-muted">
+                <span>Typing...</span>
+            </div>
+        `;
+        chatLogs.appendChild(typingDiv);
+        chatLogs.scrollTop = chatLogs.scrollHeight;
+
+        // POST request to backend chatbot API
+        fetch('/api/chatbot', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                'message': text
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const typing = document.getElementById('typingBubble');
+            if (typing) typing.remove();
+            
+            appendMessage('bot', data.response);
+        })
+        .catch(err => {
+            console.error(err);
+            const typing = document.getElementById('typingBubble');
+            if (typing) typing.remove();
+            appendMessage('bot', 'Sorry, I encountered an error. Please try again.');
+        });
+    }
+</script>
+{% endblock %}

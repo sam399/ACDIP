@@ -1,125 +1,81 @@
-# RESPOND-ER: Adaptive Community Disaster Intelligence Platform (ACDIP)
+# 🚨 RESPOND-ER: Adaptive Disaster Intelligence Platform
 
-RESPOND-ER is an AI-powered disaster response, resource coordination, and community recovery platform. It provides a real-time command center interface for administrators and responders, alongside a public SOS portal for citizens.
-
----
-
-## 🚀 Current Project State
-
-### Module 1: Disaster Response Management (Complete)
-1. **Feature 1: Disaster Dashboard** (Dhaka Operations Command Center view, interactive Leaflet.js maps, active disaster lists, supply statistics, and personnel allocation).
-2. **Feature 2: Emergency Relief Request** (Citizen SOS portal with counter widgets, browser geolocation auto-detection, photo upload capability, and session-based request status tracking).
-3. **Feature 3: AI Emergency Prioritization** (Gemini API integration that triages citizen requests asynchronously in background threads, featuring a rules-based fallback engine for offline reliability).
-4. **Feature 4: Damage Reporting** (Citizens report public infrastructure damage such as broken roads, flooding, fire hazards, and outages via pop-up modals, rendering dynamic color-coded markers directly onto the Command Center map).
-5. **Feature 5: Missing & Found Person Management** (Filing missing/found reports with photos, filtering directory lists by checkboxes, text-searching records from the global search bar, and posting family updates).
-
-### Module 2: Resource Coordination (In Progress)
-- **Feature 6: Donation Management** (Placeholder model implemented; Groupmate task).
-- **Feature 7: Community Resource Mapping** (Interactive coastal map overlay showing boat locations, water pumps, solar stations, and relief kitchens with active inventory counts).
-- **Feature 8: Smart Volunteer Matching** (AI volunteer database showing matching scores and skill tags, with dynamic click-to-dispatch API updates).
-- **Feature 9: Shelter Management** (Placeholder model implemented; Groupmate task).
-- **Feature 10: Relief Distribution Tracker** (Detailed distribution log tables tracking organizations, dates, and resource quantities with duplicate flag alerts).
-- **Feature 11: Relief Fairness Dashboard** (Distribution fairness map showing critical supply gaps, along with equity index tracking charts and duplicate warning stats).
+RESPOND-ER is a modern, real-time disaster coordination and resource optimization platform designed to bridge the gap between emergency responders, community NGOs, and public citizens during crisis events.
 
 ---
 
-## 🛠️ Tech Stack
-- **Backend Framework:** FastAPI (Asynchronous Python 3.10+)
-- **Database Engine:** SQLAlchemy with `aiosqlite` (Async local SQLite database)
-- **AI Integration:** Google Generative AI (Gemini API `gemini-1.5-flash` model for async dispatch triage)
-- **Frontend Framework:** Vanilla CSS + Bootstrap 5 (Customized colors matching Figma specifications)
-- **Interactivity:** HTML5 & HTMX (for fast updates on low-bandwidth networks)
-- **Geospatial Maps:** Leaflet.js with OpenStreetMap (light cartographic styles)
+## 👥 Persona-Driven Interfaces
+The platform dynamically alters its layout, navigation tabs, and system settings based on the active session persona. Toggle these easily using the **Profile Menu** in the header:
+
+*   **👑 Command Center Admin:** Full system access. Edit HVI sliders, configure Gemini keys, review auditable priority overrides, and trigger dispatch calls.
+*   **🚛 Field NGO Responder:** Access to resource mapping, shelter bed checkouts, recovery milestone tracking, and relief logging. Hides sensitive settings.
+*   **🏡 Public Citizen:** Streamlined, secure anonymous view. Submit SOS signals, request resources, register missing persons, and donate supplies.
 
 ---
 
-## 📂 Project Structure
-```
-ACDIP/
-├── app/
-│   ├── static/          # Custom styles, images, and upload storage
-│   │   ├── css/
-│   │   │   └── style.css
-│   │   └── uploads/     # Citizen photo submissions
-│   ├── templates/       # HTML page templates
-│   │   ├── base.html
-│   │   ├── dashboard.html
-│   │   ├── sos.html
-│   │   ├── missing_persons.html
-│   │   ├── resources.html
-│   │   ├── shelters.html
-│   │   ├── tracking.html
-│   │   └── components/
-│   ├── ai_service.py    # Gemini API prompt schema and heuristic triage rules
-│   ├── config.py        # Settings loader
-│   ├── database.py      # SQLAlchemy async connection engine
-│   ├── models.py        # Database tables
-│   └── main.py          # Routing endpoints and background tasks
-├── tests/               # Pytest testing suite
-│   ├── test_dashboard.py
-│   ├── test_sos.py
-│   ├── test_ai.py
-│   ├── test_missing.py
-│   └── test_module2.py
-├── requirements.txt     # Dependency lists
-├── seed.py              # Mock data database seed script
-└── README.md
-```
+## ⚡ Implemented Capabilities
+
+### 🔹 Core System Modules
+*   **Live Incident Map (Module 1):** Real-time leaflet map plotting active flood zones, fires, infrastructure damage, and citizen SOS clusters.
+*   **Citizen SOS Registry (Module 1):** Interactive form with photo uploads, live geolocation support, and tracking status.
+*   **AI Triage Prioritization (Module 1):** Combined logic analyzing raw vulnerability scores alongside real-time NLP keywords (uses Gemini API with offline rules backup).
+*   **Missing Persons Portal (Module 1):** Timeline updates, SAFE verification markers, and public search logs.
+*   **Community Resource Map (Module 2):** Corroborates active water pumps, boats, power generators, and NGO supply centers.
+*   **Shelter Registry (Module 2):** Track available beds, medical aid stocks, food days remaining, and register volunteers.
+*   **Relief Distribution Tracker (Module 2):** Detailed audit log verifying resource delivery quantities, destination districts, and duplicate warning flags.
+*   **Household Vulnerability Index (Module 3):** Auditable scoring algorithm ranking incidents by risk demographics (elderly, pregnant, children, disabled).
+*   **Recovery Progress Dashboard (Module 3):** Disaster baselines, verified milestones, progress percentages, weekly trends, evidence, and public filters.
+
+### 🔹 Platform Integrations & Non-Module Features
+*   **🌓 Adaptive Dark Mode:** Instant CSS variables theme toggle spanning all pages, headers, timelines, and cards.
+*   **🌐 English ⇄ Bangla Translator:** Dynamic global translation system mapping Jinja2 text elements dynamically.
+*   **⚙️ Platform Settings Panel:** Range sliders to set AI vs HVI triage weight balances, secrets input fields, and custom auto-refresh interval loops.
+*   **🛡️ System Audit Log Registry:** Compliance timeline logging manual priority overrides, previous vs new priority rankings, and admin justifications.
+*   **❓ Support Helpdesk & FAQ accordions:** Dynamic FAQ panels detailing HVI/Trust score calculations alongside SQLite-backed ticket logger lists.
+*   **🔔 Notification Dropdown Bell:** Dynamic dropdown listing priority warnings, water shortages, and direct redirection links to dashboard incidents.
+*   **💬 AI Chatbot Assistant:** HTMX-driven chatbot conversation sidebar with Gemini responses and keywords rules backup.
+*   **🚀 Coordinated Dispatch Center:** Interactive tactical simulator for the sidebar "DEPLOY RESPONSE" button, enabling multi-asset allocation (helicopters, boats, volunteer squads) and bulk status resolution synchronization in the database.
 
 ---
 
-## 🚀 Local Setup Instructions
+## 🛠️ Technology Stack
+*   **Core:** FastAPI, Asynchronous Python, Uvicorn, Jinja2 Templates
+*   **Database:** SQLite, SQLAlchemy 2 (via `aiosqlite`), Alembic Migrations
+*   **UI/UX:** Bootstrap 5, Vanilla CSS (with dynamic Dark Mode support)
+*   **Integrations:** Google Gemini API, Leaflet Maps
 
-### 1. Clone & Set Up Virtual Environment
-```bash
-# Navigate to the workspace
-cd ACDIP
+---
 
-# Create virtual environment
+## 🚀 Quick Setup & Run
+
+### 1. Environment Setup
+```powershell
+# Create & activate virtual environment
 python -m venv venv
+.\venv\Scripts\Activate.ps1
 
-# Activate virtual environment (Windows)
-.\venv\Scripts\activate
-
-# Activate virtual environment (macOS/Linux)
-source venv/bin/activate
+# Install requirements
+python -m pip install -r requirements.txt
 ```
 
-### 2. Install Dependencies
-```bash
-pip install -r requirements.txt
+### 2. Database Initialization
+```powershell
+# Run database migrations and seed design data
+python -m alembic upgrade head
+python seed.py --reset
 ```
 
-### 3. Initialize & Seed Database
-This creates the local database file `respond_er.db` and populates it with disasters, inventory levels, missing people, matched volunteers, and distribution logs matching the Figma screens:
-```bash
-python seed.py
+### 3. Start Development Server
+```powershell
+python -m uvicorn app.main:app --reload
 ```
-
-### 4. Run Development Server
-```bash
-uvicorn app.main:app --reload
-```
-Open your browser and navigate to:
-- **Command Center Dashboard:** `http://127.0.0.1:8000/`
-- **Citizen SOS Portal:** `http://127.0.0.1:8000/sos`
-- **Missing Persons Grid:** `http://127.0.0.1:8000/missing`
-- **NGO Resource Map Portal:** `http://127.0.0.1:8000/resources`
-- **Volunteer Match Hub:** `http://127.0.0.1:8000/shelters`
-- **Relief Fairness Dashboard:** `http://127.0.0.1:8000/tracking`
+Open **[http://127.0.0.1:8000](http://127.0.0.1:8000)** in your browser.
 
 ---
 
-## 🧪 Automated Testing
-We use `pytest` and `httpx` to verify API routing and asynchronous database updates:
-```bash
+## 🧪 Testing & Validation
+Verify changes using the testing database suite:
+```powershell
 python -m pytest
 ```
-
----
-
-## 🤝 Collaborative Branches & Workflow
-1. Create a feature branch: `git checkout -b feature/your-feature-name`
-2. Keep `.db` files and local variables outside git (handled by `.gitignore`)
-3. Ensure the test suite passes (`python -m pytest`) before committing
-4. Push and create a pull request to `main`
+*Note: Pytest automatically creates an isolated test database (`.test_respond_er.db`), executes migrations, runs tests, and cleans up artifacts afterwards.*

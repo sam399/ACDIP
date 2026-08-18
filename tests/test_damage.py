@@ -18,7 +18,7 @@ async def test_submit_damage_report():
     
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.post("/sos/damage", data=form_data)
-        
+
     assert response.status_code == 303
     
     # Verify database entry

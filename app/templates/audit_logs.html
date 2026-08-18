@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <main class="rc-card shadow-sm p-4">
+        <!-- Page Header -->
+        <div class="border-bottom pb-3 mb-4">
+            <span class="text-danger small fw-bold text-uppercase tracking-wider">{{ _("System Control") }}</span>
+            <h1 class="fw-bold mb-1">{{ _("Audit Log Registry") }}</h1>
+            <p class="text-muted mb-0">{{ _("Review and audit all platform prioritization overrides, parameter changes, and manual justification records.") }}</p>
+        </div>
+
+        <!-- Audit Logs Container -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body p-0">
+                        {% if overrides %}
+                        <div class="timeline-container">
+                            {% for log in overrides %}
+                            <div class="timeline-item border border-start-0 border-end-0 border-top-0 border-bottom pb-4 mb-4">
+                                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                    <div>
+                                        <h5 class="fw-bold mb-1">
+                                            <i class="bi bi-shield-fill-exclamation text-danger"></i> 
+                                            {% if log.request %}
+                                            {{ _("Manual Override:") }} {{ log.request.title }} 
+                                            <span class="text-muted small">({{ _("Request") }} #{{ log.request.id }})</span>
+                                            {% else %}
+                                            {{ _("Manual Override: Deleted Request") }} 
+                                            <span class="text-muted small">({{ _("Request") }} #{{ log.request_id }})</span>
+                                            {% endif %}
+                                        </h5>
+                                        
+                                        <!-- Metadata details -->
+                                        <div class="d-flex align-items-center gap-3 text-muted small mt-1 font-monospace" style="font-size: 0.8rem;">
+                                            <span class="d-flex align-items-center gap-1">
+                                                <i class="bi bi-clock"></i> {{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                            </span>
+                                            {% if log.request %}
+                                            <span class="d-flex align-items-center gap-1">
+                                                <i class="bi bi-geo-alt"></i> {{ log.request.location }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <!-- Priority Shift Indicators -->
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-secondary-subtle text-secondary font-monospace" style="font-size: 0.7rem;">
+                                            {{ log.previous_priority or _("Medium") }}
+                                        </span>
+                                        <i class="bi bi-arrow-right text-muted"></i>
+                                        <span class="badge {% if log.new_priority == 'Critical' %}bg-danger{% elif log.new_priority == 'High' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %} font-monospace" style="font-size: 0.7rem;">
+                                            {{ log.new_priority }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Justification content panel -->
+                                <div class="mt-3 p-3 rounded bg-light border border-light-subtle">
+                                    <strong class="d-block text-dark small mb-1">{{ _("Manual Justification:") }}</strong>
+                                    <p class="mb-0 text-muted italic" style="font-style: italic;">"{{ log.justification }}"</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <!-- Fallback empty view -->
+                        <div class="text-center py-5">
+                            <div class="display-1 text-muted mb-3"><i class="bi bi-journal-x"></i></div>
+                            <h4 class="fw-bold">{{ _("No audit logs recorded yet") }}</h4>
+                            <p class="text-muted mb-0">{{ _("Manual priority overrides or parameter changes will be recorded here for compliance checks.") }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

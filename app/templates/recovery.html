@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-3 col-md-4">{% include 'components/sidebar.html' %}</div>
+    <main class="col-lg-9 col-md-8 py-2">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div><div class="text-uppercase text-danger fw-bold small">Feature 16</div><h2 class="fw-bold mb-1">Recovery Progress Dashboard</h2><p class="text-muted mb-0">Verified progress from emergency response to long-term recovery.</p></div>
+        </div>
+
+        <form method="get" action="/recovery" class="rc-card row g-3 mb-4">
+            <div class="col-md-4"><label class="form-label fw-semibold">Disaster event</label><select name="disaster_id" class="form-select"><option value="">All events</option>{% for d in disasters %}<option value="{{ d.id }}" {% if filters.disaster_id == d.id %}selected{% endif %}>{{ d.title }}</option>{% endfor %}</select></div>
+            <div class="col-md-3"><label class="form-label fw-semibold">District</label><select name="district" class="form-select"><option value="">All districts</option>{% for d in districts %}<option value="{{ d }}" {% if filters.district == d %}selected{% endif %}>{{ d }}</option>{% endfor %}</select></div>
+            <div class="col-md-3"><label class="form-label fw-semibold">Category</label><select name="category" class="form-select"><option value="">All categories</option>{% for key, label in categories.items() %}<option value="{{ key }}" {% if filters.category == key %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+            <div class="col-md-2 d-flex align-items-end"><button class="btn btn-danger w-100">Filter</button></div>
+        </form>
+
+        <div class="row g-3 mb-4">
+            {% for row in summary %}
+            <div class="col-lg-4 col-md-6"><div class="rc-card h-100"><div class="small text-muted">{{ row.disaster_title }} · {{ row.district }}</div><h6 class="fw-bold mt-1">{{ row.category_label }}</h6><div class="d-flex justify-content-between align-items-baseline"><span class="fs-3 fw-bold">{{ row.completed }} / {{ row.total }}</span><span class="text-danger fw-bold">{{ '%.1f'|format(row.percentage) }}%</span></div><div class="progress mt-2" role="progressbar" aria-label="{{ row.category_label }} progress" aria-valuenow="{{ row.percentage }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar bg-danger" style="width: {{ row.percentage }}%"></div></div></div></div>
+            {% else %}<div class="col-12"><div class="rc-card text-center text-muted py-5">No recovery baselines match these filters yet.</div></div>{% endfor %}
+        </div>
+
+        <div class="rc-card mb-4"><h5 class="fw-bold">Verified recovery trend</h5><p class="small text-muted">Cumulative completed items, aggregated by week.</p><div style="height: 280px"><canvas id="recoveryTrend"></canvas></div></div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6"><form action="/admin/recovery/baselines" method="post" class="rc-card h-100"><h5 class="fw-bold">Administrator: set baseline</h5><p class="small text-muted">Enter the estimated damaged total used as the progress denominator.</p>
+                <label class="form-label">Disaster</label><select name="disaster_id" class="form-select mb-2" required>{% for d in disasters %}<option value="{{ d.id }}">{{ d.title }}</option>{% endfor %}</select>
+                <label class="form-label">District</label><input name="district" class="form-control mb-2" required>
+                <label class="form-label">Category</label><select name="category" class="form-select mb-2" required>{% for key, label in categories.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select>
+                <label class="form-label">Estimated damaged total</label><input name="estimated_total" type="number" min="1" class="form-control mb-3" required><button class="btn btn-outline-danger">Save baseline</button>
+            </form></div>
+            <div class="col-lg-6"><form action="/admin/recovery/milestones" method="post" enctype="multipart/form-data" class="rc-card h-100"><h5 class="fw-bold">Administrator: record milestone</h5><p class="small text-muted">A matching baseline must exist. Submitted entries are recorded as verified.</p>
+                <div class="row g-2"><div class="col-12"><label class="form-label">Disaster</label><select name="disaster_id" class="form-select" required>{% for d in disasters %}<option value="{{ d.id }}">{{ d.title }}</option>{% endfor %}</select></div><div class="col-md-6"><label class="form-label">District</label><input name="district" class="form-control" required></div><div class="col-md-6"><label class="form-label">Category</label><select name="category" class="form-select" required>{% for key, label in categories.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select></div><div class="col-md-6"><label class="form-label">Completed count</label><input name="completed_count" type="number" min="1" class="form-control" required></div><div class="col-md-6"><label class="form-label">Date</label><input name="milestone_date" type="date" class="form-control" required></div><div class="col-12"><label class="form-label">Affected area</label><input name="affected_area" class="form-control" required></div><div class="col-12"><label class="form-label">Verification notes</label><textarea name="verification_notes" class="form-control"></textarea></div><div class="col-12"><label class="form-label">Evidence photo</label><input name="evidence_photo" type="file" accept="image/*" class="form-control"></div></div><button class="btn btn-danger mt-3">Record milestone</button>
+            </form></div>
+        </div>
+
+        <div class="rc-card"><h5 class="fw-bold mb-3">Recent verified milestones</h5><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Date</th><th>Event / district</th><th>Category</th><th>Completed</th><th>Area and evidence</th></tr></thead><tbody>{% for m in milestones %}<tr><td>{{ m.milestone_date }}</td><td><strong>{{ m.disaster.title }}</strong><br><span class="text-muted small">{{ m.district }}</span></td><td>{{ categories[m.category] }}</td><td>{{ m.completed_count }}</td><td>{{ m.affected_area }}{% if m.verification_notes %}<br><span class="text-muted small">{{ m.verification_notes }}</span>{% endif %}{% if m.evidence_photo_url %}<br><a href="{{ m.evidence_photo_url }}" target="_blank" rel="noopener">View evidence</a>{% endif %}</td></tr>{% else %}<tr><td colspan="5" class="text-center text-muted py-4">No verified milestones match these filters.</td></tr>{% endfor %}</tbody></table></div></div>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+new Chart(document.getElementById('recoveryTrend'), {type: 'line', data: {labels: {{ trend['labels'] | tojson }}, datasets: [{label: 'Cumulative completed items', data: {{ trend['values'] | tojson }}, borderColor: '#dc3545', backgroundColor: 'rgba(220,53,69,.12)', fill: true, tension: .25}]}, options: {responsive: true, maintainAspectRatio: false, scales: {y: {beginAtZero: true}}}});
+</script>
+{% endblock %}
