@@ -136,5 +136,20 @@ async def test_settings_and_support_endpoints():
     assert response.status_code == 200
     assert "Audit Log Registry" in response.text
 
+    # 6. Verify role switching sets cookie
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.get("/change-role/citizen", follow_redirects=False)
+    assert response.status_code == 303
+    assert "user_role=citizen" in response.headers.get("set-cookie", "")
+
+    # 7. Verify session resetting deletes cookies
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.get("/reset-session", follow_redirects=False)
+    assert response.status_code == 303
+    cookies = response.headers.get("set-cookie", "")
+    assert "user_role=" in cookies
+    assert "dark_mode=" in cookies
+
+
 
 

@@ -111,5 +111,26 @@ async def get_audit_logs_page(request: Request, db: AsyncSession = Depends(get_d
     )
 
 
+@router.get("/change-role/{role}")
+async def change_role(role: str, request: Request):
+    referer = request.headers.get("referer", "/")
+    response = RedirectResponse(url=referer, status_code=303)
+    response.set_cookie("user_role", role, max_age=60 * 60 * 24 * 365)
+    return response
+
+
+@router.get("/reset-session")
+async def reset_session():
+    response = RedirectResponse(url="/", status_code=303)
+    response.delete_cookie("lang")
+    response.delete_cookie("dark_mode")
+    response.delete_cookie("refresh_interval")
+    response.delete_cookie("ai_weight")
+    response.delete_cookie("hvi_weight")
+    response.delete_cookie("gemini_key")
+    response.delete_cookie("user_role")
+    return response
+
+
 # Import templates in-module to avoid circular import issues
 from app.web import templates

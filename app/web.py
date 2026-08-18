@@ -31,16 +31,19 @@ class LocalizedTemplates(Jinja2Templates):
         lang = "en"
         dark_mode = "false"
         refresh_interval = "0"
+        user_role = "admin"
         if request:
             lang = request.cookies.get("lang", "en")
             dark_mode = request.cookies.get("dark_mode", "false")
             refresh_interval = request.cookies.get("refresh_interval", "0")
+            user_role = request.cookies.get("user_role", "admin")
             
         from app.services.translation import get_translation_func
         context["_"] = get_translation_func(lang)
         context["lang"] = lang
         context["dark_mode"] = dark_mode
         context["refresh_interval"] = refresh_interval
+        context["user_role"] = user_role
         
         # Write back updated context
         if len(args) >= 3 and isinstance(args[0], Request):

@@ -113,9 +113,125 @@
                         </ul>
                     </div>
                     
-                    <button class="btn btn-icon-round">
-                        <i class="bi bi-person-circle"></i>
-                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-icon-round" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-3 mt-2" aria-labelledby="profileDropdown" style="width: 290px; border-radius: 12px; font-size: 0.9rem; z-index: 1050;">
+                            <!-- Active User Persona Card -->
+                            <div class="d-flex align-items-center gap-2 pb-2 mb-2 border-bottom">
+                                {% if user_role == 'citizen' %}
+                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; font-size: 1.1rem;">
+                                    GC
+                                </div>
+                                <div>
+                                    <strong class="d-block text-dark">General Citizen</strong>
+                                    <span class="text-muted small">Anonymous Session</span>
+                                </div>
+                                {% elif user_role == 'responder' %}
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; font-size: 1.1rem;">
+                                    FA
+                                </div>
+                                <div>
+                                    <strong class="d-block text-dark">NGO Field Agent</strong>
+                                    <span class="text-muted small">agent-3@refugee-aid.org</span>
+                                </div>
+                                {% else %}
+                                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; font-size: 1.1rem;">
+                                    AD
+                                </div>
+                                <div>
+                                    <strong class="d-block text-dark">Admin Dispatcher</strong>
+                                    <span class="text-muted small">admin@responder.gov.bd</span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Role Badges & Simulated Stats -->
+                            <div class="mb-3 p-2 rounded bg-light border border-light-subtle" style="font-size: 0.8rem;">
+                                {% if user_role == 'citizen' %}
+                                <span class="badge bg-secondary-subtle text-secondary text-uppercase fw-bold font-monospace d-block text-center mb-2" style="font-size: 0.65rem;">
+                                    {{ _("General Citizen Mode") }}
+                                </span>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted">SOS Alerts:</span>
+                                    <span class="fw-bold">2 Active</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Safe Status:</span>
+                                    <span class="text-success fw-bold">Verified</span>
+                                </div>
+                                {% elif user_role == 'responder' %}
+                                <span class="badge bg-primary-subtle text-primary text-uppercase fw-bold font-monospace d-block text-center mb-2" style="font-size: 0.65rem;">
+                                    {{ _("NGO Field Agent Mode") }}
+                                </span>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted">NGO Unit:</span>
+                                    <span class="fw-bold">North Sector</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Supplies Logged:</span>
+                                    <span class="fw-bold text-primary">840 Kits</span>
+                                </div>
+                                {% else %}
+                                <span class="badge bg-danger-subtle text-danger text-uppercase fw-bold font-monospace d-block text-center mb-2" style="font-size: 0.65rem;">
+                                    {{ _("Command Center Admin Mode") }}
+                                </span>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted">Dispatch Key:</span>
+                                    <span class="fw-bold font-monospace">CMD-992</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Response Rate:</span>
+                                    <span class="fw-bold text-danger">94%</span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Role Switcher Actions -->
+                            <div class="mb-2">
+                                <small class="text-muted d-block mb-1 font-monospace text-uppercase" style="font-size: 0.65rem;">{{ _("Switch active role:") }}</small>
+                                <div class="list-group list-group-flush border-0" style="font-size: 0.85rem;">
+                                    <a href="/change-role/admin" class="list-group-item list-group-item-action border-0 rounded p-1 d-flex align-items-center gap-2 {% if user_role == 'admin' %}active bg-danger-subtle text-danger fw-bold{% endif %}">
+                                        <i class="bi bi-shield-lock"></i> {{ _("Admin Dispatcher") }}
+                                    </a>
+                                    <a href="/change-role/responder" class="list-group-item list-group-item-action border-0 rounded p-1 d-flex align-items-center gap-2 {% if user_role == 'responder' %}active bg-primary-subtle text-primary fw-bold{% endif %}">
+                                        <i class="bi bi-truck"></i> {{ _("Field Responder") }}
+                                    </a>
+                                    <a href="/change-role/citizen" class="list-group-item list-group-item-action border-0 rounded p-1 d-flex align-items-center gap-2 {% if user_role == 'citizen' %}active bg-secondary-subtle text-secondary fw-bold{% endif %}">
+                                        <i class="bi bi-person"></i> {{ _("General Citizen") }}
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Platform Settings & Audit Logs (Admin & Responder only) -->
+                            {% if user_role != 'citizen' %}
+                            <ul class="list-unstyled mb-2 d-flex flex-column gap-1 pt-2 border-top">
+                                <li>
+                                    <a class="dropdown-item rounded p-1 d-flex align-items-center gap-2" href="/settings">
+                                        <i class="bi bi-gear text-muted"></i>
+                                        <span>{{ _("Platform Settings") }}</span>
+                                    </a>
+                                </li>
+                                {% if user_role == 'admin' %}
+                                <li>
+                                    <a class="dropdown-item rounded p-1 d-flex align-items-center gap-2" href="/audit-logs">
+                                        <i class="bi bi-journal-text text-muted"></i>
+                                        <span>{{ _("Audit Logs") }}</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                            {% endif %}
+
+                            <!-- Factory Reset / Logout Action -->
+                            <div class="pt-2 border-top mt-2 text-center">
+                                <a href="/reset-session" class="btn btn-outline-danger btn-sm w-100 font-monospace" style="font-size: 0.75rem; border-radius: 6px;">
+                                    <i class="bi bi-arrow-counterclockwise"></i> {{ _("RESET PLATFORM SESSION") }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="lang-selector px-2 py-1 bg-light rounded small">
                         <a href="/change-lang/en" class="text-decoration-none {% if lang == 'en' %}fw-bold text-danger{% else %}text-muted{% endif %}">EN</a>

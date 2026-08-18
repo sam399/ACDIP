@@ -5,6 +5,34 @@
         <div class="sidebar-subtitle">{% if lang == 'bn' %}ঢাকা অপারেশনস ভিউ{% else %}Dhaka Operations View{% endif %}</div>
         
         <ul class="sidebar-menu">
+            {% if user_role == 'citizen' %}
+            <!-- Citizen Only Views -->
+            <li>
+                <a href="/sos" class="sidebar-menu-item {% if current_tab == 'sos' %}active{% endif %}">
+                    <i class="bi bi-telephone-fill"></i>
+                    <span>{{ _("Citizens SOS") }}</span>
+                </a>
+            </li>
+            <li>
+                <a href="/missing" class="sidebar-menu-item {% if current_tab == 'missing_persons' %}active{% endif %}">
+                    <i class="bi bi-person-bounding-box"></i>
+                    <span>{{ _("Missing Persons") }}</span>
+                </a>
+            </li>
+            <li>
+                <a href="/donations" class="sidebar-menu-item {% if current_tab == 'donations' %}active{% endif %}">
+                    <i class="bi bi-heart-fill"></i>
+                    <span>{{ _("Donate Resources") }}</span>
+                </a>
+            </li>
+            <li>
+                <a href="/chatbot" class="sidebar-menu-item {% if current_tab == 'chatbot' %}active{% endif %}">
+                    <i class="bi bi-chat-left-dots"></i>
+                    <span>{{ _("AI Assistant") }}</span>
+                </a>
+            </li>
+            {% else %}
+            <!-- Admin / Responder Shared Views -->
             <li>
                 <a href="/" class="sidebar-menu-item {% if current_tab == 'dashboard' %}active{% endif %}">
                     <i class="bi bi-asterisk"></i>
@@ -47,28 +75,35 @@
                     <span>{{ _("AI Assistant") }}</span>
                 </a>
             </li>
+            {% if user_role == 'admin' %}
             <li>
                 <a href="/audit-logs" class="sidebar-menu-item {% if current_tab == 'audit-logs' %}active{% endif %}">
                     <i class="bi bi-journal-text"></i>
                     <span>{{ _("Audit Logs") }}</span>
                 </a>
             </li>
+            {% endif %}
+            {% endif %}
         </ul>
     </div>
     
     <div>
+        {% if user_role != 'citizen' %}
         <button class="btn btn-deploy-response mb-3" onclick="alert('Deploying emergency response dispatch units.')">
             <i class="bi bi-rocket-takeoff-fill"></i>
             <span>{{ _("DEPLOY RESPONSE") }}</span>
         </button>
+        {% endif %}
         
         <ul class="sidebar-menu">
+            {% if user_role == 'admin' %}
             <li>
                 <a href="/settings" class="sidebar-menu-item {% if current_tab == 'settings' %}active{% endif %}">
                     <i class="bi bi-gear"></i>
                     <span>{{ _("Settings") }}</span>
                 </a>
             </li>
+            {% endif %}
             <li>
                 <a href="/support" class="sidebar-menu-item {% if current_tab == 'support' %}active{% endif %}">
                     <i class="bi bi-question-circle"></i>
