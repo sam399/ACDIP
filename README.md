@@ -34,6 +34,7 @@ The platform dynamically alters its layout, navigation tabs, and system settings
 *   **❓ Support Helpdesk & FAQ accordions:** Dynamic FAQ panels detailing HVI/Trust score calculations alongside SQLite-backed ticket logger lists.
 *   **🔔 Notification Dropdown Bell:** Dynamic dropdown listing priority warnings, water shortages, and direct redirection links to dashboard incidents.
 *   **💬 AI Chatbot Assistant:** HTMX-driven chatbot conversation sidebar with Gemini responses and keywords rules backup.
+*   **🚀 Coordinated Dispatch Center:** Interactive tactical simulator for the sidebar "DEPLOY RESPONSE" button, enabling multi-asset allocation (helicopters, boats, volunteer squads) and bulk status resolution synchronization in the database.
 
 ---
 
