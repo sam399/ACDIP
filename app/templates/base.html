@@ -42,6 +42,7 @@
             <div class="collapse navbar-collapse" id="topNavbar">
                 <!-- Navigation Tabs -->
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0 main-nav-tabs">
+                    {% if user_role != 'citizen' %}
                     <li class="nav-item">
                         <a class="nav-link {% if current_tab == 'dashboard' %}active{% endif %}" href="/">{{ _("Dashboard") }}</a>
                     </li>
@@ -52,13 +53,14 @@
                         <a class="nav-link {% if current_tab == 'resources' %}active{% endif %}" href="/resources">{{ _("Resources") }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if current_tab == 'donations' %}active{% endif %}" href="/donations">{{ _("Donations") }}</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link {% if current_tab == 'shelters' %}active{% endif %}" href="/shelters">{{ _("Shelters") }}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if current_tab == 'recovery' %}active{% endif %}" href="/recovery">{{ _("Recovery") }}</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if current_tab == 'donations' %}active{% endif %}" href="/donations">{{ _("Donations") }}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if current_tab == 'missing_persons' %}active{% endif %}" href="/missing">{{ _("Missing Persons") }}</a>
