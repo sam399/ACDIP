@@ -89,5 +89,27 @@ async def submit_support_ticket(
     return RedirectResponse(url="/support?success=1", status_code=303)
 
 
+@router.get("/audit-logs", response_class=HTMLResponse)
+async def get_audit_logs_page(request: Request, db: AsyncSession = Depends(get_db)):
+    from sqlalchemy.orm import selectinload
+    from app.models import PriorityOverride
+
+    result = await db.execute(
+        select(PriorityOverride)
+        .options(selectinload(PriorityOverride.request))
+        .order_by(PriorityOverride.created_at.desc())
+    )
+    overrides = list(result.scalars().all())
+
+    return templates.TemplateResponse(
+        request=request,
+        name="audit_logs.html",
+        context={
+            "overrides": overrides,
+            "current_tab": "audit-logs",
+        },
+    )
+
+
 # Import templates in-module to avoid circular import issues
 from app.web import templates

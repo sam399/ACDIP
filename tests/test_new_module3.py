@@ -130,4 +130,11 @@ async def test_settings_and_support_endpoints():
         response = await ac.post("/support/submit", data=ticket_data, follow_redirects=False)
     assert response.status_code == 303
 
+    # 5. Verify Audit Logs Page loads
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.get("/audit-logs")
+    assert response.status_code == 200
+    assert "Audit Log Registry" in response.text
+
+
 
