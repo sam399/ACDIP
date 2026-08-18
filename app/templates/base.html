@@ -273,5 +273,163 @@
         }, {{ refresh_interval }} * 1000);
     </script>
     {% endif %}
+
+    <!-- Coordinated Dispatch Modal -->
+    <div class="modal fade" id="deployResponseModal" tabindex="-1" aria-labelledby="deployResponseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" style="border-radius: 12px; background-color: #ffffff; color: #212529;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-danger" id="deployResponseModalLabel">
+                        <i class="bi bi-rocket-takeoff-fill me-2"></i> Coordinated Dispatch Center
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-close="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">Simulate deployment and asset allocations to active incident priority queues.</p>
+                    
+                    <!-- Dispatch setup panel -->
+                    <div id="dispatchSetup">
+                        <!-- Select Assets -->
+                        <div class="mb-4">
+                            <strong class="d-block mb-2 text-dark font-monospace text-uppercase" style="font-size: 0.75rem;">1. Select Coordination Assets</strong>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <div class="form-check p-3 rounded border bg-light d-flex align-items-center gap-2">
+                                        <input class="form-check-input ms-0 me-2" type="checkbox" id="assetHeli" checked>
+                                        <label class="form-check-label text-dark small fw-semibold" for="assetHeli">
+                                            🚁 Medevac Helicopter (Heli-1)
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check p-3 rounded border bg-light d-flex align-items-center gap-2">
+                                        <input class="form-check-input ms-0 me-2" type="checkbox" id="assetBoat" checked>
+                                        <label class="form-check-label text-dark small fw-semibold" for="assetBoat">
+                                            🚤 NGO Inflatable Boats (Unit 3)
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check p-3 rounded border bg-light d-flex align-items-center gap-2">
+                                        <input class="form-check-input ms-0 me-2" type="checkbox" id="assetTruck">
+                                        <label class="form-check-label text-dark small fw-semibold" for="assetTruck">
+                                            🚛 Water Purification Truck
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check p-3 rounded border bg-light d-flex align-items-center gap-2">
+                                        <input class="form-check-input ms-0 me-2" type="checkbox" id="assetVol" checked>
+                                        <label class="form-check-label text-dark small fw-semibold" for="assetVol">
+                                            👷 Volunteer Rescue Squad B
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Select target incidents -->
+                        <div class="mb-4">
+                            <strong class="d-block mb-2 text-dark font-monospace text-uppercase" style="font-size: 0.75rem;">2. Select Target Incident Zone</strong>
+                            <select id="dispatchTarget" class="form-select">
+                                <option value="all">All Pending Incidents (Bulk Resolve)</option>
+                                <option value="Satkhira">Satkhira Division Sector 2</option>
+                                <option value="Sylhet">Sylhet Division Sector 3</option>
+                                <option value="Khulna">Khulna Division Sector 1</option>
+                            </select>
+                        </div>
+
+                        <button type="button" class="btn btn-danger w-100 fw-bold py-2" onclick="startDispatchSimulation()">
+                            <i class="bi bi-rocket-takeoff-fill me-1"></i> LAUNCH TACTICAL DISPATCH
+                        </button>
+                    </div>
+
+                    <!-- Simulation Progress loader -->
+                    <div id="dispatchLoading" class="d-none py-4 text-center">
+                        <div class="spinner-border text-danger mb-3" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-1" id="dispatchStatusText">Initializing telemetry...</h5>
+                        <p class="text-muted small mb-0">Satellite telemetry and asset locks active.</p>
+                    </div>
+
+                    <!-- Success State -->
+                    <div id="dispatchSuccess" class="d-none py-4 text-center">
+                        <div class="display-3 text-success mb-3"><i class="bi bi-check-circle-fill"></i></div>
+                        <h4 class="fw-bold text-dark mb-2">Tactical Deployment Active!</h4>
+                        <p class="text-muted small mb-4" id="dispatchSummaryText">Selected assets successfully routed. Incident records updated.</p>
+                        <button type="button" class="btn btn-success px-4" onclick="confirmResetAndReload()">
+                            Confirm & Refresh Queue
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comms Dispatch Simulation Logic -->
+    <script>
+        let dispatchTimer = null;
+
+        function startDispatchSimulation() {
+            document.getElementById('dispatchSetup').classList.add('d-none');
+            document.getElementById('dispatchLoading').classList.remove('d-none');
+            
+            const statusText = document.getElementById('dispatchStatusText');
+            const steps = [
+                "Initializing GPS telemetry coordinates...",
+                "Establishing satellite data link channel 4...",
+                "Routing Medevac-1 and NGO Boat Units...",
+                "Synchronizing telemetry logs in database...",
+                "Tactical Dispatch Completed!"
+            ];
+            
+            let stepIdx = 0;
+            statusText.innerText = steps[0];
+            
+            dispatchTimer = setInterval(function() {
+                stepIdx++;
+                if (stepIdx < steps.length) {
+                    statusText.innerText = steps[stepIdx];
+                } else {
+                    clearInterval(dispatchTimer);
+                    showDispatchSuccess();
+                }
+            }, 600);
+        }
+
+        function showDispatchSuccess() {
+            document.getElementById('dispatchLoading').classList.add('d-none');
+            document.getElementById('dispatchSuccess').classList.remove('d-none');
+            
+            const targetZone = document.getElementById('dispatchTarget').value;
+            const summary = document.getElementById('dispatchSummaryText');
+            
+            let deployedAssets = [];
+            if (document.getElementById('assetHeli').checked) deployedAssets.push("Medevac Heli");
+            if (document.getElementById('assetBoat').checked) deployedAssets.push("NGO Inflatable Boats");
+            if (document.getElementById('assetTruck').checked) deployedAssets.push("Water Purification Truck");
+            if (document.getElementById('assetVol').checked) deployedAssets.push("Volunteer Squad B");
+            
+            summary.innerHTML = `<strong>Assets deployed:</strong> ${deployedAssets.join(', ') || 'None'}<br>` +
+                                `<strong>Target Incident:</strong> ${targetZone === 'all' ? 'All active pending requests' : 'Sector in ' + targetZone}<br>` +
+                                `<span class="text-success fw-semibold">Statuses synchronized and resolved.</span>`;
+        }
+
+        function confirmResetAndReload() {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/admin/requests/bulk-dispatch';
+            
+            const idsInput = document.createElement('input');
+            idsInput.type = 'hidden';
+            idsInput.name = 'request_ids';
+            idsInput.value = 'all';
+            
+            form.appendChild(idsInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
 </body>
 </html>

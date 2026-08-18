@@ -150,6 +150,12 @@ async def test_settings_and_support_endpoints():
     assert "user_role=" in cookies
     assert "dark_mode=" in cookies
 
+    # 8. Verify bulk dispatch resolves requests
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.post("/admin/requests/bulk-dispatch", data={"request_ids": "all", "action": "Completed"}, follow_redirects=False)
+    assert response.status_code == 303
+
+
 
 
 

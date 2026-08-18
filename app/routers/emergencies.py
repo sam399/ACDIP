@@ -140,6 +140,30 @@ async def override_request_priority(
     return RedirectResponse(url="/#priority-queue", status_code=303)
 
 
+@router.post("/admin/requests/bulk-dispatch")
+async def bulk_dispatch(
+    request_ids: str = Form(""),
+    action: str = Form("Completed"),
+    db: AsyncSession = Depends(get_db),
+):
+    if request_ids == "all":
+        result = await db.execute(
+            select(EmergencyRequest).where(EmergencyRequest.status != "Completed")
+        )
+        for req in result.scalars().all():
+            req.status = action
+        await db.commit()
+    elif request_ids:
+        ids = [int(x) for x in request_ids.split(",") if x.strip()]
+        for req_id in ids:
+            emergency = await db.get(EmergencyRequest, req_id)
+            if emergency:
+                emergency.status = action
+        await db.commit()
+    return RedirectResponse(url="/", status_code=303)
+
+
+
 @router.post("/sos/damage", response_class=RedirectResponse)
 async def submit_damage_report(
     damage_type: str = Form(...),

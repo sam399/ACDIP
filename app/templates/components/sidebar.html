@@ -89,7 +89,7 @@
     
     <div>
         {% if user_role != 'citizen' %}
-        <button class="btn btn-deploy-response mb-3" onclick="alert('Deploying emergency response dispatch units.')">
+        <button class="btn btn-deploy-response mb-3" data-bs-toggle="modal" data-bs-target="#deployResponseModal">
             <i class="bi bi-rocket-takeoff-fill"></i>
             <span>{{ _("DEPLOY RESPONSE") }}</span>
         </button>
